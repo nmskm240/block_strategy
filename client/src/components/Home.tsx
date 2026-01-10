@@ -1,67 +1,122 @@
 import { useState } from "react";
-import beaver from "@/assets/beaver.svg";
+import { svgResize } from "blockly/core";
+import { pythonGenerator } from "blockly/python";
+import { useResizeObserver } from "@/hooks";
+import { BlocklyProvider, useBlockly } from "@/lib/blockly";
+import { PyodideProvider, usePyodide } from "@/lib/pyodide";
 import { Button } from "@/components/ui/button";
-import { hcWithType } from "server/dist/client";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000";
+export function Editor() {
+  const { blocklyDivRef, workspace } = useBlockly();
+  const { ref: containerRef } = useResizeObserver(() => {
+    if (workspace) {
+      svgResize(workspace);
+    }
+  });
 
-const client = hcWithType(SERVER_URL);
-
-type ResponseType = Awaited<ReturnType<typeof client.hello.$get>>;
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        height: "100%",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        id="blockly-div"
+        ref={blocklyDivRef}
+        style={{
+          flexGrow: 1,
+          minHeight: 0,
+        }}
+      />
+    </div>
+  );
+}
 
 function Home() {
-	const [data, setData] = useState<
-		Awaited<ReturnType<ResponseType["json"]>> | undefined
-	>();
-
-	async function sendRequest() {
-		try {
-			const res = await client.hello.$get();
-			if (!res.ok) {
-				console.log("Error fetching data");
-				return;
-			}
-			const data = await res.json();
-			setData(data);
-		} catch (error) {
-			console.log(error);
-		}
-	}
-
-	return (
-		<div className="max-w-xl mx-auto flex flex-col gap-6 items-center justify-center min-h-screen">
-			<a
-				href="https://github.com/stevedylandev/bhvr"
-				target="_blank"
-				rel="noopener"
-			>
-				<img
-					src={beaver}
-					className="w-16 h-16 cursor-pointer"
-					alt="beaver logo"
-				/>
-			</a>
-			<h1 className="text-5xl font-black">bhvr</h1>
-			<h2 className="text-2xl font-bold">Bun + Hono + Vite + React</h2>
-			<p>A typesafe fullstack monorepo</p>
-			<div className="flex items-center gap-4">
-				<Button onClick={sendRequest}>Call API</Button>
-				<Button variant="secondary" asChild>
-					<a target="_blank" href="https://bhvr.dev" rel="noopener">
-						Docs
-					</a>
-				</Button>
-			</div>
-			{data && (
-				<pre className="bg-gray-100 p-4 rounded-md">
-					<code>
-						Message: {data.message} <br />
-						Success: {data.success.toString()}
-					</code>
-				</pre>
-			)}
-		</div>
-	);
+  return (
+    <PyodideProvider>
+      <PyodideGate>
+        <div className="w-full h-screen flex flex-col">
+          <BlocklyProvider>
+            <EditorToolbar />
+            <div className="flex-1 min-h-0">
+              <Editor />
+            </div>
+          </BlocklyProvider>
+        </div>
+      </PyodideGate>
+    </PyodideProvider>
+  );
 }
 
 export default Home;
+
+function PyodideGate({ children }: { children: React.ReactNode }) {
+  const { isLoading } = usePyodide();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center">
+        <div className="text-sm font-medium text-slate-600">
+          Pyodide を読み込み中...
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
+
+function EditorToolbar() {
+  const { workspace } = useBlockly();
+  const { runner, isLoading } = usePyodide();
+  const [output, setOutput] = useState("");
+  const [code, setCode] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+
+  const runCode = async () => {
+    if (!workspace || !runner || isLoading) {
+      return;
+    }
+
+    const pythonCode = pythonGenerator.workspaceToCode(workspace);
+    setCode(pythonCode);
+    setIsRunning(true);
+
+    try {
+      const result = await runner(pythonCode);
+      setOutput(result === undefined ? "OK" : String(result));
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : String(error));
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  return (
+    <div className="border-b border-slate-200 p-3 flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <Button onClick={runCode} disabled={!workspace || isLoading || isRunning}>
+          {isRunning ? "Running..." : "Run Python"}
+        </Button>
+        <span className="text-xs text-slate-500">
+          {isLoading ? "Pyodide loading..." : "Ready"}
+        </span>
+      </div>
+      {code && (
+        <pre className="text-xs bg-slate-50 border border-slate-200 rounded-md p-2 overflow-auto">
+          {code}
+        </pre>
+      )}
+      {output && (
+        <div className="text-xs text-slate-700 bg-white border border-slate-200 rounded-md p-2">
+          {output}
+        </div>
+      )}
+    </div>
+  );
+}
