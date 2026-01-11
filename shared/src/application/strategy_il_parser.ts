@@ -11,6 +11,7 @@ import type {
   AssignmentStatement,
   BinaryExpression,
   EntryAction,
+  ExitAction,
   EnumLiteralExpression,
   Expression,
   FunctionCallExpression,
@@ -39,6 +40,7 @@ const LineComment = createToken({
 const When = createToken({ name: 'When', pattern: /WHEN/i });
 const Do = createToken({ name: 'Do', pattern: /DO/i });
 const Entry = createToken({ name: 'Entry', pattern: /ENTRY/i });
+const Exit = createToken({ name: 'Exit', pattern: /EXIT/i });
 const True = createToken({ name: 'True', pattern: /TRUE/i });
 const False = createToken({ name: 'False', pattern: /FALSE/i });
 const And = createToken({ name: 'And', pattern: /AND/i });
@@ -84,6 +86,7 @@ const allTokens: TokenType[] = [
   When,
   Do,
   Entry,
+  Exit,
   True,
   False,
   And,
@@ -186,7 +189,11 @@ class StrategyILParser extends EmbeddedActionsParser {
 
   private action = this.RULE(
     'action',
-    (): Action => this.SUBRULE(this.entryAction)
+    (): Action =>
+      this.OR([
+        { ALT: () => this.SUBRULE(this.entryAction) },
+        { ALT: () => this.SUBRULE(this.exitAction) },
+      ])
   );
 
   private entryAction = this.RULE('entryAction', (): EntryAction => {
@@ -206,6 +213,25 @@ class StrategyILParser extends EmbeddedActionsParser {
       side: sideArg?.value ?? this.createMissingIdentifier(),
       size: sizeArg?.value ?? this.createMissingIdentifier(),
     } satisfies EntryAction;
+  });
+
+  private exitAction = this.RULE('exitAction', (): ExitAction => {
+    this.CONSUME(Exit);
+    this.CONSUME(LParen);
+    const args = this.OPTION(() => this.SUBRULE(this.argumentList)) || [];
+    this.CONSUME(RParen);
+    const safeArgs = Array.isArray(args) ? args : [];
+    const sideArg = safeArgs.find(
+      (arg) => arg.kind === 'NamedArgument' && arg.name.toLowerCase() === 'side'
+    ) as NamedArgument | undefined;
+    const sizeArg = safeArgs.find(
+      (arg) => arg.kind === 'NamedArgument' && arg.name.toLowerCase() === 'size'
+    ) as NamedArgument | undefined;
+    return {
+      kind: 'ExitAction',
+      side: sideArg?.value ?? this.createMissingIdentifier(),
+      size: sizeArg?.value ?? this.createMissingIdentifier(),
+    } satisfies ExitAction;
   });
 
   private argumentList = this.RULE('argumentList', (): Argument[] => {

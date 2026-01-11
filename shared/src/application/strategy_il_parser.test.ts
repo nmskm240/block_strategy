@@ -11,6 +11,9 @@ WHEN cross_over(sma_fast, sma_slow)
   DO ENTRY(
     side = LONG,
     size = FIXED(0.1)
+  ), EXIT(
+    side = LONG,
+    size = FIXED(0.1)
   );
 `;
     const result = parseStrategyIL(input);
@@ -22,5 +25,8 @@ WHEN cross_over(sma_fast, sma_slow)
 
     const whenStatement = result.ast?.statements[2];
     expect(whenStatement?.kind).toBe('WhenStatement');
+    if (whenStatement?.kind === 'WhenStatement') {
+      expect(whenStatement.actions.length).toBe(2);
+    }
   });
 });

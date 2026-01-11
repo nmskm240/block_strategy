@@ -19,10 +19,16 @@ export type WhenStatement = {
   actions: Action[];
 };
 
-export type Action = EntryAction;
+export type Action = EntryAction | ExitAction;
 
 export type EntryAction = {
   kind: 'EntryAction';
+  side: Expression;
+  size: Expression;
+};
+
+export type ExitAction = {
+  kind: 'ExitAction';
   side: Expression;
   size: Expression;
 };
