@@ -1,8 +1,6 @@
 import * as procedure from "@blockly/block-shareable-procedures";
 import * as Blockly from "blockly/core";
 
-import * as blocks from "./blocks";
-
 procedure.unregisterProcedureBlocks();
 Blockly.common.defineBlocks(procedure.blocks);
 

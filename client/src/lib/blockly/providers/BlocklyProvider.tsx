@@ -16,7 +16,7 @@ import {
   BlocklyWorkspaceAdditionalParams,
   WithAdditionalWorkspace,
 } from '../types';
-import mlToolbox from '../workspace/toolbox';
+import appToolbox from '../workspace/toolbox';
 
 type Context = {
   workspace: Blockly.WorkspaceSvg | null;
@@ -36,7 +36,7 @@ export function BlocklyProvider({
   children,
   initialState,
   workspaceParams,
-  toolbox = mlToolbox,
+  toolbox = appToolbox,
 }: Props) {
   const blocklyDivRef = useRef<HTMLDivElement>(null);
   const [workspace, setWorkspace] = useState<Blockly.WorkspaceSvg | null>(null);
