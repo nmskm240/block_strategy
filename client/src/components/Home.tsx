@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { svgResize } from "blockly/core";
-import { pythonGenerator } from "blockly/python";
-import { useResizeObserver } from "@/hooks";
-import { BlocklyProvider, useBlockly } from "@/lib/blockly";
-import { PyodideProvider, usePyodide } from "@/lib/pyodide";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { svgResize } from 'blockly/core';
+import { pythonGenerator } from 'blockly/python';
+import { useResizeObserver } from '@/hooks';
+import { BlocklyProvider, useBlockly } from '@/lib/blockly';
+import { PyodideProvider, usePyodide } from '@/lib/pyodide';
+import { Button } from '@/components/ui/button';
 
 export function Editor() {
   const { blocklyDivRef, workspace } = useBlockly();
@@ -18,10 +18,10 @@ export function Editor() {
     <div
       ref={containerRef}
       style={{
-        height: "100%",
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <div
@@ -74,8 +74,8 @@ function PyodideGate({ children }: { children: React.ReactNode }) {
 function EditorToolbar() {
   const { workspace } = useBlockly();
   const { runner, isLoading } = usePyodide();
-  const [output, setOutput] = useState("");
-  const [code, setCode] = useState("");
+  const [output, setOutput] = useState('');
+  const [code, setCode] = useState('');
   const [isRunning, setIsRunning] = useState(false);
 
   const runCode = async () => {
@@ -89,7 +89,7 @@ function EditorToolbar() {
 
     try {
       const result = await runner(pythonCode);
-      setOutput(result === undefined ? "OK" : String(result));
+      setOutput(result === undefined ? 'OK' : String(result));
     } catch (error) {
       setOutput(error instanceof Error ? error.message : String(error));
     } finally {
@@ -100,11 +100,14 @@ function EditorToolbar() {
   return (
     <div className="border-b border-slate-200 p-3 flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <Button onClick={runCode} disabled={!workspace || isLoading || isRunning}>
-          {isRunning ? "Running..." : "Run Python"}
+        <Button
+          onClick={runCode}
+          disabled={!workspace || isLoading || isRunning}
+        >
+          {isRunning ? 'Running...' : 'Run Python'}
         </Button>
         <span className="text-xs text-slate-500">
-          {isLoading ? "Pyodide loading..." : "Ready"}
+          {isLoading ? 'Pyodide loading...' : 'Ready'}
         </span>
       </div>
       {code && (
