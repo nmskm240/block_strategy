@@ -92,7 +92,7 @@ export function BlocklyProvider({
       workspace,
       blocklyDivRef,
     }),
-    [workspace],
+    [workspace]
   );
 
   return (

@@ -1,1 +1,1 @@
-export * from "./PyodideProvider";
+export * from './PyodideProvider';

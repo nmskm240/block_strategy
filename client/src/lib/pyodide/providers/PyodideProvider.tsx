@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client";
+'use client';
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 
-import { loadPyodide, type PyodideInterface } from "pyodide";
+import { loadPyodide, type PyodideInterface } from 'pyodide';
 
 const PYODIDE_VERSION = import.meta.env.VITE_PYODIDE_VERSION;
 const PYODIDE_CDN = import.meta.env.VITE_PYODIDE_CDN_URL;
 const PYODIDE_INDEX_URL = `${PYODIDE_CDN}/v${PYODIDE_VERSION}/full/`;
-const INDEXED_PACKAGES = (import.meta.env.VITE_PYODIDE_INDEXED_PACKAGES ?? "")
-  .split(",")
+const INDEXED_PACKAGES = (import.meta.env.VITE_PYODIDE_INDEXED_PACKAGES ?? '')
+  .split(',')
   .map((p: string) => p.trim())
   .filter(Boolean);
-const PYPI_PACKAGES = (import.meta.env.VITE_PYODIDE_PYPI_PACKAGES ?? "")
-  .split(",")
+const PYPI_PACKAGES = (import.meta.env.VITE_PYODIDE_PYPI_PACKAGES ?? '')
+  .split(',')
   .map((p: string) => p.trim())
   .filter(Boolean);
 
@@ -35,7 +35,7 @@ export function PyodideProvider({ children }: PyodideProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const runner: PythonRunner = async (code: string) => {
     if (!pyodideRef.current) {
-      throw new Error("Pyodide is not loaded");
+      throw new Error('Pyodide is not loaded');
     }
     return pyodideRef.current.runPythonAsync(code);
   };
@@ -55,7 +55,7 @@ export function PyodideProvider({ children }: PyodideProviderProps) {
         if (!isActive) return;
 
         if (PYPI_PACKAGES.length) {
-          const micropip = pyodide.pyimport("micropip");
+          const micropip = pyodide.pyimport('micropip');
           await micropip.install(PYPI_PACKAGES);
         }
 
@@ -85,6 +85,6 @@ export function PyodideProvider({ children }: PyodideProviderProps) {
 // eslint-disable-next-line react-refresh/only-export-components
 export const usePyodide = () => {
   const ctx = useContext(Context);
-  if (!ctx) throw new Error("usePyodide must be used within PyodideProvider");
+  if (!ctx) throw new Error('usePyodide must be used within PyodideProvider');
   return ctx;
 };

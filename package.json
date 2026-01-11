@@ -21,7 +21,8 @@
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "test": "turbo test",
-    "postinstall": "turbo build --filter=shared --filter=server"
+    "postinstall": "turbo build --filter=shared --filter=server",
+    "format": "prettier --write ."
   },
   "keywords": [
     "bun",
@@ -33,6 +34,7 @@
   ],
   "devDependencies": {
     "bun-types": "latest",
+    "prettier": "3.7.4",
     "turbo": "^2.6.3"
   },
   "peerDependencies": {
