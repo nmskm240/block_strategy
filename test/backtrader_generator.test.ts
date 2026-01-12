@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { parseStrategyIL } from './strategy_il_parser';
-import { generateBacktraderStrategy } from './backtrader_generator';
+import { BacktraderGenerator } from '@shared/application/code_generator/backtrader/backtrader_generator';
+import { parseStrategyIL } from '@shared/application/strategy_il_parser';
 
 describe('generateBacktraderStrategy', () => {
   test('generates python strategy code', () => {
@@ -8,7 +8,7 @@ describe('generateBacktraderStrategy', () => {
 sma_fast = SMA(close, 20);
 sma_slow = SMA(close, 50);
 
-WHEN cross_over(sma_fast, sma_slow)
+WHEN CrossOver(sma_fast, sma_slow) > 0
   DO ENTRY(
     side = LONG,
     size = FIXED(0.1)
@@ -22,13 +22,14 @@ WHEN cross_over(sma_fast, sma_slow)
       throw new Error('expected AST');
     }
 
-    const code = generateBacktraderStrategy(result.ast, {
-      className: 'TestStrategy',
-    });
+    const generator = new BacktraderGenerator();
+    const code = generator.generate(result.ast, { name: 'TestStrategy' });
 
     expect(code).toContain('class TestStrategy(bt.Strategy):');
     expect(code).toContain('self.sma_fast = bt.ind.SMA(self.data.close, 20)');
-    expect(code).toContain('if (bt.ind.CrossOver(self.sma_fast, self.sma_slow) > 0):');
+    expect(code).toContain(
+      'if (bt.ind.CrossOver(self.sma_fast, self.sma_slow) > 0):'
+    );
     expect(code).toContain('self.buy(size=0.1)');
     expect(code).toContain('self.close(size=0.1)');
   });

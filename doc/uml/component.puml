@@ -12,13 +12,13 @@ package "Domain" {
 package "Application" {
     interface Backtester
     interface "Code Generator" as CodeGen
+    component "Backtrader Generator" as BacktraderGen
+    component "PineScript Generator" as PineGen
+    component "MQL Generator" as MQLGen
 }
 
 package "Infrastructure" {
     component "Pyodide Adapter" as Pyodide
-    component "Backtrader Generator" as BacktraderGen
-    component "PineScript Generator" as PineGen
-    component "MQL Generator" as MQLGen
 }
 
 UI ..> Backtester

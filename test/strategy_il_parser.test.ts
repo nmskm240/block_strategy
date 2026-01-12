@@ -1,5 +1,5 @@
+import { parseStrategyIL } from '@shared/application/strategy_il_parser';
 import { describe, expect, test } from 'bun:test';
-import { parseStrategyIL } from './strategy_il_parser';
 
 describe('parseStrategyIL', () => {
   test('parses sample strategy IL', () => {
