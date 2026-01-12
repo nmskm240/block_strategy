@@ -159,6 +159,10 @@ export class BacktraderGenerator extends CodeGenerator<BacktraderGenerationOptio
     }
 
     const ordered: string[] = [];
+    for (const arg of positionalArgs) {
+      ordered.push(this.renderArg(arg));
+    }
+
     const used = new Set<string>();
     for (const name of paramOrder) {
       const key = name.toLowerCase();
@@ -168,13 +172,12 @@ export class BacktraderGenerator extends CodeGenerator<BacktraderGenerationOptio
       used.add(key);
     }
 
-    for (const arg of positionalArgs) {
-      ordered.push(this.renderArg(arg));
-    }
-
-    for (const [key, arg] of namedArgs.entries()) {
+    for (const arg of expr.args) {
+      if (arg.kind !== 'NamedArgument') continue;
+      const key = arg.name.toLowerCase();
       if (!used.has(key)) {
         ordered.push(this.renderArg(arg));
+        used.add(key);
       }
     }
 
