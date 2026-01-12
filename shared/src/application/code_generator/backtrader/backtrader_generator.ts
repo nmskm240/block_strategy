@@ -122,6 +122,10 @@ export class BacktraderGenerator extends CodeGenerator<BacktraderGenerationOptio
   protected renderFunctionCall(expr: FunctionCallExpression): string {
     const callee = expr.callee;
     const lower = callee.toLowerCase();
+    const canonical =
+      BACKTRADER_INDICATOR_ALIASES[lower] ??
+      BACKTRADER_INDICATOR_ALIASES[expr.callee] ??
+      expr.callee;
     return match(lower)
       .with('fixed', () => {
         const args = this.renderArgs(expr);
@@ -129,7 +133,7 @@ export class BacktraderGenerator extends CodeGenerator<BacktraderGenerationOptio
       })
       .otherwise(() => {
         const args = this.renderArgs(expr);
-        return `bt.ind.${callee}(${args.join(', ')})`;
+        return `bt.ind.${canonical}(${args.join(', ')})`;
       });
   }
 
