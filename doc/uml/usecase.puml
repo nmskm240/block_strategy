@@ -1,0 +1,40 @@
+@startuml
+left to right direction
+
+actor User
+
+package BlockStrategy {
+
+    usecase "戦略を作成" as Create
+    usecase "戦略を実行" as Execute
+    usecase "戦略をバックテスト" as Backtest
+    usecase "実行結果を表示" as DisplayResults
+    usecase "実行結果を保存" as SaveResults
+
+    usecase "戦略を出力" as Output
+    usecase "戦略を変換（Strategy IL）" as Transform
+
+    usecase "Backtrader用に出力" as OutputForBacktrader
+    usecase "PineScript用に出力" as OutputForPineScript
+    usecase "MQL用に出力" as OutputForMQL
+}
+
+User --> Create
+User --> Execute
+User --> Output
+User --> DisplayResults
+User --> SaveResults
+
+Create .> Execute : <<include>>
+Execute .> Transform : <<include>>
+Execute .> Backtest : <<include>>
+Execute .> DisplayResults : <<include>>
+DisplayResults .> SaveResults : <<include>>
+
+Output .> Transform : <<include>>
+
+OutputForBacktrader --|> Output
+OutputForPineScript --|> Output
+OutputForMQL --|> Output
+
+@enduml
