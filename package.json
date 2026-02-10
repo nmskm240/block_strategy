@@ -1,5 +1,5 @@
 {
-  "name": "block-strategy",
+  "name": "my-bhvr-app",
   "version": "0.5.1",
   "description": "A monorepo template built with Bun, Hono, Vite, and React",
   "author": "Steve Simkins",
@@ -21,8 +21,7 @@
     "lint": "turbo lint",
     "type-check": "turbo type-check",
     "test": "turbo test",
-    "postinstall": "turbo build --filter=shared --filter=server",
-    "format": "prettier --write ."
+    "postinstall": "turbo build --filter=shared --filter=server"
   },
   "keywords": [
     "bun",
@@ -34,13 +33,9 @@
   ],
   "devDependencies": {
     "bun-types": "latest",
-    "prettier": "3.7.4",
     "turbo": "^2.6.3"
   },
   "peerDependencies": {
     "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "hono": "^4.11.3"
   }
 }
