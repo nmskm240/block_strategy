@@ -1,15 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useRete } from "rete-react-plugin";
-import { createEditor, type EditorApi } from "./editor";
+import { createEditor } from "./lib/rete/editor";
 import { PaperTradePanel } from "./components/PaperTradePanel";
-import { Toolbox } from "./components/Toolbox";
 import { TradingViewPanel } from "./components/TradingViewPanel";
-import { runBacktestFromGraph } from "./services/backtest";
 
 function App() {
-  const [ref, editor] = useRete<EditorApi>(createEditor);
+  const [ref] = useRete(createEditor);
   const [symbol, setSymbol] = useState("NASDAQ:AAPL");
-  const canRunBacktest = Boolean(editor);
   const [panelWidth, setPanelWidth] = useState(420);
   const [chartHeight, setChartHeight] = useState(360);
   const dragState = useRef<{
@@ -66,10 +63,7 @@ function App() {
         overflow: "hidden",
       }}
     >
-      <div style={{ flex: 1, minWidth: 0, position: "relative" }}>
-        <div ref={ref} style={{ height: "100%", width: "100%" }}></div>
-        <Toolbox editor={editor} />
-      </div>
+      <div ref={ref} style={{ height: "100vh", width: "100vw" }}></div>
       <div
         style={{
           width: panelWidth,
@@ -123,12 +117,8 @@ function App() {
           <PaperTradePanel
             symbol={symbol}
             onSymbolChange={setSymbol}
-            canRunBacktest={canRunBacktest}
-            onRunBacktest={() => {
-              if (!editor) return null;
-              const snapshot = editor.getGraph();
-              return runBacktestFromGraph(snapshot, symbol);
-            }}
+            canRunBacktest={false}
+            onRunBacktest={() => null}
           />
         </div>
       </div>

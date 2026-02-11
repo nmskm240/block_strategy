@@ -1,0 +1,20 @@
+import { GetSchemes } from "rete";
+import { ReactArea2D } from "rete-react-plugin";
+import { ContextMenuExtra } from "rete-context-menu-plugin";
+import { Connection } from "../connection";
+import { Nodes } from "../nodes";
+
+export type Schemes = GetSchemes<
+  Nodes,
+  Connection<Nodes, Nodes>
+>;
+export type AreaExtra = ReactArea2D<Schemes> | ContextMenuExtra;
+
+export enum ConditionOperators {
+  EQUALS = "==",
+  NOT_EQUALS = "!=",
+  LESS_THAN = "<",
+  LESS_THAN_OR_EQUALS = "<=",
+  GREATER_THAN = ">",
+  GREATER_THAN_OR_EQUALS = ">="
+}
