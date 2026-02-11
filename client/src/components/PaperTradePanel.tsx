@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import type { BacktestResult, Trade } from "../types/trading";
+import type { BacktestResult, Trade } from "@/types";
 
 type PaperTradePanelProps = {
   symbol: string;
   onSymbolChange: (value: string) => void;
-  onRunBacktest: () => BacktestResult | null;
+  onRunBacktest: () => Promise<BacktestResult | null>;
   canRunBacktest: boolean;
 };
 
@@ -21,6 +21,8 @@ export function PaperTradePanel({
   const [trades, setTrades] = useState<Trade[]>([]);
   const [size, setSize] = useState(1);
   const [backtest, setBacktest] = useState<BacktestResult | null>(null);
+  const [isBacktesting, setIsBacktesting] = useState(false);
+  const [backtestError, setBacktestError] = useState<string | null>(null);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -195,16 +197,29 @@ export function PaperTradePanel({
               color: "#fff",
               borderRadius: 6,
               padding: "6px 10px",
-              cursor: canRunBacktest ? "pointer" : "not-allowed",
+              cursor: canRunBacktest && !isBacktesting ? "pointer" : "not-allowed",
             }}
-            onClick={() => {
-              if (!canRunBacktest) return;
-              const result = onRunBacktest();
-              if (result) setBacktest(result);
+            onClick={async () => {
+              if (!canRunBacktest || isBacktesting) return;
+              setIsBacktesting(true);
+              try {
+                const result = await onRunBacktest();
+                if (result) {
+                  setBacktest(result);
+                  setBacktestError(null);
+                }
+              } catch (error) {
+                console.error(error);
+                const message =
+                  error instanceof Error ? error.message : "Failed to run backtest";
+                setBacktestError(message);
+              } finally {
+                setIsBacktesting(false);
+              }
             }}
-            disabled={!canRunBacktest}
+            disabled={!canRunBacktest || isBacktesting}
           >
-            Backtest
+            {isBacktesting ? "Backtesting..." : "Backtest"}
           </button>
         </div>
         <div style={{ opacity: 0.7, fontSize: 11 }}>Trades</div>
@@ -233,6 +248,20 @@ export function PaperTradePanel({
           )}
         </div>
         <div style={{ opacity: 0.7, fontSize: 11 }}>Backtest Result</div>
+        {backtestError ? (
+          <div
+            style={{
+              background: "rgba(162, 59, 59, 0.18)",
+              border: "1px solid rgba(255, 120, 120, 0.5)",
+              color: "#ffb3b3",
+              borderRadius: 6,
+              padding: 8,
+              fontSize: 11,
+            }}
+          >
+            {backtestError}
+          </div>
+        ) : null}
         <div
           style={{
             background: "rgba(255,255,255,0.04)",

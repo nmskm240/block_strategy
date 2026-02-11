@@ -1,23 +1,12 @@
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
-import type { ApiResponse } from 'shared/dist'
+import { Hono } from "hono";
+import { cors } from "hono/cors";
 
-const app = new Hono()
+import { backtestRoute } from "./routes/backtest";
 
-app.use(cors())
+const app = new Hono();
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+app.use(cors());
 
-app.get('/hello', async (c) => {
+app.route("/backtest", backtestRoute);
 
-  const data: ApiResponse = {
-    message: "Hello BHVR!",
-    success: true
-  }
-
-  return c.json(data, { status: 200 })
-})
-
-export default app
+export default app;

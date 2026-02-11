@@ -1,6 +1,6 @@
 import { ClassicPreset } from "rete";
 
-import type { OHLCV } from "shared/src/types";
+import type { OHLCV } from "shared";
 import { socket } from "../sockets";
 
 type Inputs = {

@@ -1,14 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRete } from "rete-react-plugin";
-import { createEditor } from "./lib/rete/editor";
-import { PaperTradePanel } from "./components/PaperTradePanel";
-import { TradingViewPanel } from "./components/TradingViewPanel";
+import { PaperTradePanel } from "@/components/PaperTradePanel";
+import { TradingViewPanel } from "@/components/TradingViewPanel";
+import { BacktestApiClient } from "@/services/backtest-client";
+import { createEditor } from "@/lib/rete";
+import type { EditorHandle } from "@/lib/rete";
 
 function App() {
-  const [ref] = useRete(createEditor);
+  const [ref, editorHandle] = useRete<EditorHandle>(createEditor);
   const [symbol, setSymbol] = useState("NASDAQ:AAPL");
   const [panelWidth, setPanelWidth] = useState(420);
   const [chartHeight, setChartHeight] = useState(360);
+  const backtestClient = useMemo(() => new BacktestApiClient(), []);
   const dragState = useRef<{
     resizingWidth: boolean;
     resizingHeight: boolean;
@@ -51,6 +54,12 @@ function App() {
       window.removeEventListener("pointerup", onUp);
     };
   }, []);
+
+  async function handleRunBacktest() {
+    if (!editorHandle) return null;
+    const graph = editorHandle.getGraphPayload();
+    return backtestClient.runBacktest({ graph, symbol });
+  }
 
   return (
     <div
@@ -117,8 +126,8 @@ function App() {
           <PaperTradePanel
             symbol={symbol}
             onSymbolChange={setSymbol}
-            canRunBacktest={false}
-            onRunBacktest={() => null}
+            canRunBacktest={Boolean(editorHandle)}
+            onRunBacktest={handleRunBacktest}
           />
         </div>
       </div>

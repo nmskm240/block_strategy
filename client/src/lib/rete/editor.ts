@@ -13,6 +13,20 @@ import {
 import { SelectControl, SelectControlComponent } from "./controls";
 import { ConditionNode, IndicatorNode, OHLCVNode, OrderNode } from "./nodes";
 import { AreaExtra, Schemes } from "./types";
+import type { GraphPayload } from "@/types";
+
+export type EditorHandle = {
+  destroy: () => void;
+  getGraphPayload: () => GraphPayload;
+};
+
+function toSerializableControlValue(value: unknown): string | number | boolean | null {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+  if (value === null) return null;
+  return null;
+}
 
 export async function createEditor(container: HTMLElement) {
   const editor = new NodeEditor<Schemes>();
@@ -58,7 +72,39 @@ export async function createEditor(container: HTMLElement) {
 
   AreaExtensions.simpleNodesOrder(area);
 
-  return {
+  const handle: EditorHandle = {
     destroy: () => area.destroy(),
+    getGraphPayload: () => {
+      const nodes = editor.getNodes().map((node) => {
+        const controls = Object.fromEntries(
+          Object.entries(node.controls as Record<string, unknown>).map(([key, control]) => {
+            if (typeof control !== "object" || control == null) {
+              return [key, null];
+            }
+            const inputLike = control as { value?: unknown; options?: { initial?: unknown } };
+            const value = inputLike.value ?? inputLike.options?.initial;
+            return [key, toSerializableControlValue(value)];
+          }),
+        );
+
+        return {
+          id: String(node.id),
+          label: node.label,
+          controls,
+        };
+      });
+
+      const connections = editor.getConnections().map((connection) => ({
+        id: String(connection.id),
+        source: String(connection.source),
+        sourceOutput: String(connection.sourceOutput),
+        target: String(connection.target),
+        targetInput: String(connection.targetInput),
+      }));
+
+      return { nodes, connections };
+    },
   };
+
+  return handle;
 }
