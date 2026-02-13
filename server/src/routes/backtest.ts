@@ -1,25 +1,39 @@
 import { Hono } from "hono";
 import { BacktestRequestSchema, BacktestResponseSchema } from "shared";
 import type { BacktestResponse } from "shared";
+import * as usecase from "@server/application/usecases";
 
 export const backtestRoute = new Hono();
 
 backtestRoute.post("/", async (c) => {
   const rawBody = await c.req.json().catch(() => null);
-  const parseResult = BacktestRequestSchema.safeParse(rawBody);
+  const request = BacktestRequestSchema.safeParse(rawBody);
 
-  if (!parseResult.success) {
+  if (!request.success) {
     return c.json(
       {
         message: "Invalid request payload",
         success: false,
-        errors: parseResult.error.issues,
+        errors: request.error.issues,
       },
       { status: 400 },
     );
   }
 
-  const initialCash = parseResult.data.initialCash ?? 10000;
+  try {
+    usecase.resolveStrategyGraph(request.data.graph);
+  } catch (error) {
+    return c.json(
+      {
+        message: "Invalid strategy graph",
+        success: false,
+        errors: error instanceof Error ? [error.message] : ["Unknown error"],
+      },
+      { status: 400 },
+    );
+  }
+
+  const initialCash = request.data.initialCash ?? 10000;
   const pnl = 137.42;
   const finalEquity = initialCash + pnl;
 
@@ -27,8 +41,6 @@ backtestRoute.post("/", async (c) => {
     success: true,
     message: "Backtest completed successfully",
     data: {
-      requestId: crypto.randomUUID(),
-      mql: `// mock MQL generated for ${parseResult.data.symbol}`,
       result: {
         trades: [
           { side: "BUY", price: 181.25, size: 1, time: "2026-02-01T09:30:00Z" },
