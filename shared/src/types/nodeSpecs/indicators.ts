@@ -15,8 +15,8 @@ function defineIndicatorNodeSchema<
   });
 }
 
-export const SmaSpecSchema = defineIndicatorNodeSchema(
-  "SMA",
+const SmaSchema = defineIndicatorNodeSchema(
+  "sma",
   {
     period: z.number().int().min(1),
   },
@@ -27,10 +27,9 @@ export const SmaSpecSchema = defineIndicatorNodeSchema(
     value: z.number(),
   },
 );
-export type SmaSpec = z.infer<typeof SmaSpecSchema>;
 
-export const RsiSpecSchema = defineIndicatorNodeSchema(
-  "RSI",
+const RsiSchema = defineIndicatorNodeSchema(
+  "rsi",
   {
     period: z.number().int().min(1),
   },
@@ -41,10 +40,9 @@ export const RsiSpecSchema = defineIndicatorNodeSchema(
     value: z.number(),
   },
 );
-export type RsiSpec = z.infer<typeof RsiSpecSchema>;
 
-export const BBandSpecSchema = defineIndicatorNodeSchema(
-  "BBAND",
+const BBandSchema = defineIndicatorNodeSchema(
+  "bband",
   {
     period: z.number().int().min(1),
     stdDev: z.number().positive(),
@@ -58,11 +56,20 @@ export const BBandSpecSchema = defineIndicatorNodeSchema(
     lowerBand: z.number(),
   },
 );
-export type BBandSpec = z.infer<typeof BBandSpecSchema>;
 
-export const IndicatorNodeSpecSchema = z.discriminatedUnion("indicatorType", [
-  SmaSpecSchema,
-  RsiSpecSchema,
-  BBandSpecSchema,
-]);
+export const IndicatorRegistry = {
+  sma: SmaSchema,
+  rsi: RsiSchema,
+  bband: BBandSchema,
+} as const;
+
+export type IndicatorKind = keyof typeof IndicatorRegistry;
+
+export const IndicatorNodeSpecSchema = z.discriminatedUnion(
+  "indicatorType",
+  Object.values(IndicatorRegistry) as [
+    (typeof IndicatorRegistry)[keyof typeof IndicatorRegistry],
+    ...(typeof IndicatorRegistry)[keyof typeof IndicatorRegistry][],
+  ],
+);
 export type IndicatorNodeSpec = z.infer<typeof IndicatorNodeSpecSchema>;

@@ -1,22 +1,14 @@
 import { ClassicPreset } from "rete";
+import { type IndicatorKind, IndicatorRegistry } from "shared";
 
 import { socket } from "../sockets";
 import { SelectControl } from "../controls";
 
-const options = [
-  { label: "SMA", value: "SMA" },
-  { label: "EMA", value: "EMA" },
-  { label: "RSI", value: "RSI" },
-  { label: "MACD", value: "MACD" },
-  { label: "Bollinger Bands", value: "BB" },
-];
+export const INDICATOR_NODE_PORTS_CHANGED_EVENT =
+  "indicator-node-ports-changed";
 
-type Inputs = {
-  in: ClassicPreset.Socket;
-};
-type Outputs = {
-  out: ClassicPreset.Socket;
-};
+type Inputs = Record<string, ClassicPreset.Socket>;
+type Outputs = Record<string, ClassicPreset.Socket>;
 type Controls = {
   indicator: SelectControl;
 };
@@ -27,30 +19,56 @@ export class IndicatorNode extends ClassicPreset.Node<
   Controls
 > {
   paramControlKeys: string[] = [];
+  private kind: IndicatorKind = "sma";
 
   constructor() {
     super("Indicator");
 
-    this.addInput("in", new ClassicPreset.Input(socket, "value"));
     this.addControl(
       "indicator",
       new SelectControl({
-        options: options,
-        initial: "SMA",
+        options: Object.keys(IndicatorRegistry).map((e) => ({
+          label: e,
+          value: e,
+        })),
+        initial: this.kind,
         change: this._onChangeIndicator.bind(this),
       }),
     );
-    this.addOutput("out", new ClassicPreset.Output(socket, "value"));
+    this.applyPorts(this.kind);
   }
 
-  // applyControls(key: string) {
-  //   for (const key of this.paramControlKeys.splice(0)) {
-  //     this.removeControl(key);
-  //   }
-  // }
+  private applyPorts(indicatorKind: IndicatorKind): void {
+    const spec = IndicatorRegistry[indicatorKind];
+
+    for (const key of Object.keys(this.inputs)) {
+      this.removeInput(key);
+    }
+    for (const key of Object.keys(this.outputs)) {
+      this.removeOutput(key);
+    }
+
+    for (const key of Object.keys(spec.shape.inputs.shape)) {
+      this.addInput(key, new ClassicPreset.Input(socket, key));
+    }
+    for (const key of Object.keys(spec.shape.outputs.shape)) {
+      this.addOutput(key, new ClassicPreset.Output(socket, key));
+    }
+  }
 
   private _onChangeIndicator(value: string): void {
-    console.log("Indicator changed to:", value);
-    // this.applyControls(value);
+    this.kind = value as IndicatorKind;
+    this.applyPorts(this.kind);
+    // FIXME: 暫定対応。イベントを投げるのがいいのかどうかは考える必要あり
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent<{ nodeId: string }>(
+          INDICATOR_NODE_PORTS_CHANGED_EVENT,
+          {
+            detail: { nodeId: String(this.id) },
+          },
+        ),
+      );
+    }
   }
 }

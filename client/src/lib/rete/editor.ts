@@ -11,7 +11,13 @@ import {
   Presets as ContextMenuPresets,
 } from "rete-context-menu-plugin";
 import { SelectControl, SelectControlComponent } from "./controls";
-import { ConditionNode, IndicatorNode, OHLCVNode, OrderNode } from "./nodes";
+import {
+  ConditionNode,
+  IndicatorNode,
+  INDICATOR_NODE_PORTS_CHANGED_EVENT,
+  OHLCVNode,
+  OrderNode,
+} from "./nodes";
 import { AreaExtra, Schemes } from "./types";
 import type { GraphPayload } from "@/types";
 
@@ -72,8 +78,36 @@ export async function createEditor(container: HTMLElement) {
 
   AreaExtensions.simpleNodesOrder(area);
 
+  const onIndicatorPortsChanged = async (event: Event) => {
+    const customEvent = event as CustomEvent<{ nodeId?: string }>;
+    const nodeId = customEvent.detail?.nodeId;
+    if (!nodeId) return;
+    const node = editor.getNode(nodeId as Schemes["Node"]["id"]);
+    if (!node) return;
+
+    const outgoingConnections = editor
+      .getConnections()
+      .filter((connection) => String(connection.source) === nodeId);
+
+    for (const connection of outgoingConnections) {
+      await editor.removeConnection(connection.id);
+    }
+
+    void area.update("node", node.id);
+  };
+  window.addEventListener(
+    INDICATOR_NODE_PORTS_CHANGED_EVENT,
+    onIndicatorPortsChanged,
+  );
+
   const handle: EditorHandle = {
-    destroy: () => area.destroy(),
+    destroy: () => {
+      window.removeEventListener(
+        INDICATOR_NODE_PORTS_CHANGED_EVENT,
+        onIndicatorPortsChanged,
+      );
+      area.destroy();
+    },
     getGraphPayload: () => {
       const nodes = editor.getNodes().map((node) => {
         const controls = Object.fromEntries(
