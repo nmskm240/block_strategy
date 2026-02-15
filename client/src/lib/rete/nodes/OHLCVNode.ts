@@ -1,20 +1,25 @@
 import { ClassicPreset } from "rete";
 
-import type { OHLCV } from "shared";
+import type { OHLCV, OhlcvNodeSpec } from "shared";
+import { SelectControl } from "../controls";
 import { socket } from "../sockets";
 
-type Inputs = {
+type OhlcvKind = OhlcvNodeSpec["params"]["kind"];
+
+const kindOptions: { label: string; value: OhlcvKind }[] = [
+  { label: "Open", value: "OPEN" },
+  { label: "High", value: "HIGH" },
+  { label: "Low", value: "LOW" },
+  { label: "Close", value: "CLOSE" },
+  { label: "Volume", value: "VOLUME" },
+];
+
+type Inputs = Record<string, never>;
+type Outputs = {
   value: ClassicPreset.Socket;
 };
-type Outputs = {
-  open: ClassicPreset.Socket;
-  high: ClassicPreset.Socket;
-  low: ClassicPreset.Socket;
-  close: ClassicPreset.Socket;
-  volume: ClassicPreset.Socket;
-};
 type Controls = {
-  value: ClassicPreset.InputControl<"number">;
+  kind: SelectControl;
 };
 
 export class OHLCVNode extends ClassicPreset.Node<Inputs, Outputs, Controls> {
@@ -23,11 +28,14 @@ export class OHLCVNode extends ClassicPreset.Node<Inputs, Outputs, Controls> {
   constructor() {
     super("OHLCV");
 
-    this.addOutput("open", new ClassicPreset.Output(socket, "Open", true));
-    this.addOutput("high", new ClassicPreset.Output(socket, "High", true));
-    this.addOutput("low", new ClassicPreset.Output(socket, "Low", true));
-    this.addOutput("close", new ClassicPreset.Output(socket, "Close", true));
-    this.addOutput("volume", new ClassicPreset.Output(socket, "Volume", true));
+    this.addControl(
+      "kind",
+      new SelectControl({
+        options: kindOptions,
+        initial: "CLOSE",
+      }),
+    );
+    this.addOutput("value", new ClassicPreset.Output(socket, "Value", true));
   }
 
   data(): OHLCV {
