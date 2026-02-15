@@ -12,11 +12,11 @@ import {
 } from "rete-context-menu-plugin";
 import { SelectControl, SelectControlComponent } from "./controls";
 import {
+  ActionNode,
   ConditionNode,
   IndicatorNode,
   INDICATOR_NODE_PORTS_CHANGED_EVENT,
   OHLCVNode,
-  OrderNode,
 } from "./nodes";
 import { AreaExtra, Schemes } from "./types";
 import type { GraphPayload } from "@/types";
@@ -43,7 +43,7 @@ export async function createEditor(container: HTMLElement) {
     items: ContextMenuPresets.classic.setup([
       ["OHLCV", () => new OHLCVNode()],
       ["Indicator", () => new IndicatorNode()],
-      ["Order", () => new OrderNode()],
+      ["Action", () => new ActionNode()],
       ["Condition", () => new ConditionNode()],
     ]),
   });

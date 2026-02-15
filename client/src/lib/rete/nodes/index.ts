@@ -1,5 +1,5 @@
 export { IndicatorNode, INDICATOR_NODE_PORTS_CHANGED_EVENT } from "./IndicatorNode";
-export { OrderNode } from "./OrderNode";
+export { ActionNode } from "./ActionNode";
 export { OHLCVNode } from "./OHLCVNode";
 export { ConditionNode } from "./ConditionNode";
 
