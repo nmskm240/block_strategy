@@ -18,7 +18,7 @@ function defineIndicatorNodeSchema<
 const SmaSchema = defineIndicatorNodeSchema(
   "sma",
   {
-    period: z.number().int().min(1),
+    period: z.number().int().min(1).default(20),
   },
   {
     source: z.number(),
@@ -31,7 +31,7 @@ const SmaSchema = defineIndicatorNodeSchema(
 const RsiSchema = defineIndicatorNodeSchema(
   "rsi",
   {
-    period: z.number().int().min(1),
+    period: z.number().int().min(1).default(20),
   },
   {
     source: z.number(),
@@ -44,8 +44,8 @@ const RsiSchema = defineIndicatorNodeSchema(
 const BBandSchema = defineIndicatorNodeSchema(
   "bband",
   {
-    period: z.number().int().min(1),
-    stdDev: z.number().positive(),
+    period: z.number().int().min(1).default(20),
+    stdDev: z.number().positive().default(2),
   },
   {
     source: z.number(),
@@ -64,6 +64,23 @@ export const IndicatorRegistry = {
 } as const;
 
 export type IndicatorKind = keyof typeof IndicatorRegistry;
+
+export function getIndicatorParamDefault(
+  kind: IndicatorKind,
+  key: string,
+  fallback = 0,
+): number {
+  const paramsShape = IndicatorRegistry[kind].shape.params.shape as Record<
+    string,
+    z.ZodTypeAny
+  >;
+  const schema = paramsShape[key];
+  if (!schema) return fallback;
+
+  const parsed = schema.safeParse(undefined);
+  if (!parsed.success || typeof parsed.data !== "number") return fallback;
+  return parsed.data;
+}
 
 export const IndicatorNodeSpecSchema = z.discriminatedUnion(
   "indicatorType",
