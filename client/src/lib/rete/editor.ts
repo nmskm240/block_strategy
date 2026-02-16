@@ -1,52 +1,26 @@
 import { createRoot } from "react-dom/client";
 import { ClassicPreset, NodeEditor } from "rete";
-import { AreaPlugin, AreaExtensions } from "rete-area-plugin";
+import { AreaExtensions, AreaPlugin } from "rete-area-plugin";
 import {
   ConnectionPlugin,
   Presets as ConnectionPresets,
 } from "rete-connection-plugin";
-import { ReactPlugin, Presets } from "rete-react-plugin";
-import {
-  ContextMenuPlugin,
-  Presets as ContextMenuPresets,
-} from "rete-context-menu-plugin";
+import { Presets, ReactPlugin } from "rete-react-plugin";
+import { contextMenu } from "./context";
 import { SelectControl, SelectControlComponent } from "./controls";
-import {
-  ActionNode,
-  ConditionNode,
-  IndicatorNode,
-  INDICATOR_NODE_PORTS_CHANGED_EVENT,
-  OHLCVNode,
-} from "./nodes";
-import { AreaExtra, Schemes } from "./types";
-import type { GraphPayload } from "@/types";
+import type { AreaExtra, Schemes } from "./types";
+import type { Graph } from "shared";
 
 export type EditorHandle = {
   destroy: () => void;
-  getGraphPayload: () => GraphPayload;
+  getGraph: () => Graph;
 };
-
-function toSerializableControlValue(value: unknown): string | number | boolean | null {
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return value;
-  }
-  if (value === null) return null;
-  return null;
-}
 
 export async function createEditor(container: HTMLElement) {
   const editor = new NodeEditor<Schemes>();
   const area = new AreaPlugin<Schemes, AreaExtra>(container);
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
   const render = new ReactPlugin<Schemes, AreaExtra>({ createRoot });
-  const contextMenu = new ContextMenuPlugin<Schemes>({
-    items: ContextMenuPresets.classic.setup([
-      ["OHLCV", () => new OHLCVNode()],
-      ["Indicator", () => new IndicatorNode()],
-      ["Action", () => new ActionNode()],
-      ["Condition", () => new ConditionNode()],
-    ]),
-  });
 
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
     accumulating: AreaExtensions.accumulateOnCtrl(),
@@ -78,65 +52,28 @@ export async function createEditor(container: HTMLElement) {
 
   AreaExtensions.simpleNodesOrder(area);
 
-  const onIndicatorPortsChanged = async (event: Event) => {
-    const customEvent = event as CustomEvent<{ nodeId?: string }>;
-    const nodeId = customEvent.detail?.nodeId;
-    if (!nodeId) return;
-    const node = editor.getNode(nodeId as Schemes["Node"]["id"]);
-    if (!node) return;
-
-    const outgoingConnections = editor
-      .getConnections()
-      .filter((connection) => String(connection.source) === nodeId);
-
-    for (const connection of outgoingConnections) {
-      await editor.removeConnection(connection.id);
-    }
-
-    void area.update("node", node.id);
-  };
-  window.addEventListener(
-    INDICATOR_NODE_PORTS_CHANGED_EVENT,
-    onIndicatorPortsChanged,
-  );
-
   const handle: EditorHandle = {
     destroy: () => {
-      window.removeEventListener(
-        INDICATOR_NODE_PORTS_CHANGED_EVENT,
-        onIndicatorPortsChanged,
-      );
       area.destroy();
     },
-    getGraphPayload: () => {
-      const nodes = editor.getNodes().map((node) => {
-        const controls = Object.fromEntries(
-          Object.entries(node.controls as Record<string, unknown>).map(([key, control]) => {
-            if (typeof control !== "object" || control == null) {
-              return [key, null];
-            }
-            const inputLike = control as { value?: unknown; options?: { initial?: unknown } };
-            const value = inputLike.value ?? inputLike.options?.initial;
-            return [key, toSerializableControlValue(value)];
-          }),
-        );
+    getGraph: () => {
+      const nodes = editor
+        .getNodes()
+        .map((node) => node.toGraphNode())
+        .filter((node): node is NonNullable<typeof node> => node !== null);
 
-        return {
-          id: String(node.id),
-          label: node.label,
-          controls,
-        };
-      });
-
-      const connections = editor.getConnections().map((connection) => ({
-        id: String(connection.id),
-        source: String(connection.source),
-        sourceOutput: String(connection.sourceOutput),
-        target: String(connection.target),
-        targetInput: String(connection.targetInput),
+      const edges = editor.getConnections().map((connection) => ({
+        from: {
+          nodeId: String(connection.source),
+          portName: String(connection.sourceOutput),
+        },
+        to: {
+          nodeId: String(connection.target),
+          portName: String(connection.targetInput),
+        },
       }));
 
-      return { nodes, connections };
+      return { nodes, edges };
     },
   };
 

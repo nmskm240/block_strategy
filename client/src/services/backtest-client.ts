@@ -1,10 +1,11 @@
 import { BacktestRequestSchema, BacktestResponseSchema } from "shared";
-import type { BacktestResult, GraphPayload } from "@/types";
+import type { BacktestResult } from "@/types";
+import type { Graph } from "shared";
 import { ApiClient } from "@/services/api-client";
 
 export type RunBacktestInput = {
   symbol: string;
-  graph: GraphPayload;
+  graph: Graph;
   initialCash?: number;
 };
 

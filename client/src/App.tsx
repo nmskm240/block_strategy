@@ -57,7 +57,7 @@ function App() {
 
   async function handleRunBacktest() {
     if (!editorHandle) return null;
-    const graph = editorHandle.getGraphPayload();
+    const graph = editorHandle.getGraph();
     return backtestClient.runBacktest({ graph, symbol });
   }
 
