@@ -1,7 +1,7 @@
 import { ClassicPreset } from "rete";
-import { Nodes } from "./nodes";
+import { NodeBase } from "./nodes";
 
 export class Connection<
-  A extends Nodes,
-  B extends Nodes,
+  A extends NodeBase,
+  B extends NodeBase,
 > extends ClassicPreset.Connection<A, B> {}
