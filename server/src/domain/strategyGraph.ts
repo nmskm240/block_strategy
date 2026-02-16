@@ -1,9 +1,11 @@
 import {
   ActionNodeSpecSchema,
   IndicatorNodeSpecSchema,
+  LogicalNodeSpecSchema,
   OhlcvNodeSpecSchema,
   type ActionNodeSpec,
   type IndicatorNodeSpec,
+  type LogicalNodeSpec,
   type NodeSpec,
   type OhlcvNodeSpec,
   type GraphPort,
@@ -37,7 +39,7 @@ export interface StrategyGraphNode {
 
 export class OHLCVNode implements StrategyGraphNode {
   readonly id: StrategyGraphNodeId;
-  readonly spec: NodeSpec;
+  readonly spec: OhlcvNodeSpec;
   readonly inputPorts: readonly GraphPort[] = [];
   readonly outputPorts: readonly GraphPort[] = [
     { name: "value", type: "NUMERIC" },
@@ -56,7 +58,7 @@ export class OHLCVNode implements StrategyGraphNode {
 
 export class IndicatorNode implements StrategyGraphNode {
   readonly id: StrategyGraphNodeId;
-  readonly spec: NodeSpec;
+  readonly spec: IndicatorNodeSpec;
   readonly inputPorts: readonly GraphPort[];
   readonly outputPorts: readonly GraphPort[];
 
@@ -81,7 +83,7 @@ export class IndicatorNode implements StrategyGraphNode {
 
 export class ActionNode implements StrategyGraphNode {
   readonly id: StrategyGraphNodeId;
-  readonly spec: NodeSpec;
+  readonly spec: ActionNodeSpec;
   readonly inputPorts: readonly GraphPort[] = [
     { name: "trigger", type: "BOOLEAN" },
   ];
@@ -91,6 +93,28 @@ export class ActionNode implements StrategyGraphNode {
     const parsed = ActionNodeSpecSchema.safeParse(spec);
     if (!parsed.success) {
       throw new Error(`Invalid action node spec: ${parsed.error.message}`);
+    }
+
+    this.id = id;
+    this.spec = parsed.data;
+  }
+}
+
+export class LogicalNode implements StrategyGraphNode {
+  readonly id: StrategyGraphNodeId;
+  readonly spec: LogicalNodeSpec;
+  readonly inputPorts: readonly GraphPort[] = [
+    { name: "left", type: "NUMERIC" },
+    { name: "right", type: "NUMERIC" },
+  ];
+  readonly outputPorts: readonly GraphPort[] = [
+    { name: "true", type: "BOOLEAN" },
+  ];
+
+  constructor(id: StrategyGraphNodeId, spec: LogicalNodeSpec) {
+    const parsed = LogicalNodeSpecSchema.safeParse(spec);
+    if (!parsed.success) {
+      throw new Error(`Invalid logical node spec: ${parsed.error.message}`);
     }
 
     this.id = id;

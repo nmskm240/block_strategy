@@ -1,6 +1,7 @@
 import {
   ActionNode,
   IndicatorNode,
+  LogicalNode,
   StrategyGraphNodeId,
   OHLCVNode,
   StrategyGraphBuilder,
@@ -40,6 +41,7 @@ function resolveNode(nodeData: GraphNode): StrategyGraphNode {
       (spec) => new IndicatorNode(nodeId, spec),
     )
     .with({ kind: NodeKind.ACTION }, (spec) => new ActionNode(nodeId, spec))
+    .with({ kind: NodeKind.LOGICAL }, (spec) => new LogicalNode(nodeId, spec))
     .exhaustive();
 }
 
