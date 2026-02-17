@@ -18,13 +18,14 @@ export class ApiClient {
   private baseUrl: string;
 
   constructor(options: ApiClientOptions = {}) {
-    this.baseUrl = options.baseUrl ?? import.meta.env.VITE_SERVER_URL ?? "http://localhost:3000";
+    this.baseUrl = options.baseUrl ?? import.meta.env.VITE_SERVER_URL;
   }
 
   async post<TBody>(path: string, body: TBody): Promise<unknown> {
+    const requestUrl = `${this.baseUrl}${path}`;
     let response: Response;
     try {
-      response = await fetch(`${this.baseUrl}${path}`, {
+      response = await fetch(requestUrl, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -33,7 +34,7 @@ export class ApiClient {
       });
     } catch (error) {
       throw new ApiClientError(
-        `Cannot connect to API server at ${this.baseUrl}. Is the server running?`,
+        `Cannot connect to API server at ${requestUrl}. Is the server running?`,
         0,
         error,
       );

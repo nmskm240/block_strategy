@@ -1,7 +1,7 @@
 import { BacktestRequestSchema, BacktestResponseSchema } from "shared";
 import type { BacktestResult } from "@/types";
 import type { Graph } from "shared";
-import { ApiClient } from "@/services/api-client";
+import { ApiClient } from "@/services/apiClient";
 
 export type RunBacktestInput = {
   symbol: string;

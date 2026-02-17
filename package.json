@@ -15,6 +15,7 @@
     "dev": "turbo dev",
     "dev:client": "turbo dev --filter=client",
     "dev:server": "turbo dev --filter=server",
+    "dev:server:worker": "cd server && bun run dev",
     "build": "turbo build",
     "build:client": "turbo build --filter=client",
     "build:server": "turbo build --filter=server",

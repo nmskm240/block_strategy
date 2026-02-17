@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRete } from "rete-react-plugin";
 import { PaperTradePanel } from "@/components/PaperTradePanel";
 import { TradingViewPanel } from "@/components/TradingViewPanel";
-import { BacktestApiClient } from "@/services/backtest-client";
+import { BacktestApiClient } from "@/services/backtestClient";
 import { createEditor } from "@/lib/rete";
 import type { EditorHandle } from "@/lib/rete";
 
