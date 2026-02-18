@@ -56,6 +56,7 @@
       "version": "0.0.1",
       "dependencies": {
         "chai": "^5.2.0",
+        "data-forge-indicators": "^0.2.7",
         "grademark": "^0.3.0",
         "hono": "^4.10.8",
         "shared": "workspace:*",
@@ -527,6 +528,8 @@
     "csstype": ["csstype@3.2.3", "", {}, "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ=="],
 
     "data-forge": ["data-forge@1.10.4", "", { "dependencies": { "@data-forge/serialization": "^1.0.0", "dayjs": "^1.8.12", "easy-table": "1.1.0", "json5": "^2.1.0", "numeral": "^2.0.6", "papaparse": "5.2.0", "typy": "^3.0.1" } }, "sha512-BZdw957xin6Yz3XK20Xv4wN1IqgqNnJp5dK4eaAh8o2rb+9eMS+TvI9Gt8KSsf+BbXjnIf+r2sqKuHCeY+dRkQ=="],
+
+    "data-forge-indicators": ["data-forge-indicators@0.2.7", "", { "dependencies": { "moment": "^2.29.1" }, "peerDependencies": { "data-forge": "^1.8.12" } }, "sha512-Y02fGcoqAm8CoDdB76iG96jSOp38kk+rTaQVAOPixuytraxmlP58K2ubyiSKJZiPhVUUTge92TFN8dnkBjyekA=="],
 
     "dayjs": ["dayjs@1.11.19", "", {}, "sha512-t5EcLVS6QPBNqM2z8fakk/NKel+Xzshgt8FFKAn+qwlD1pzZWxh0nVCrvFK7ZDb6XucZeF9z8C7CBWTRIVApAw=="],
 

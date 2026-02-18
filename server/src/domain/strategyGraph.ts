@@ -25,6 +25,12 @@ export type StrategyGraphNodePortRef = {
   portName: string;
 };
 
+export function StrategyGraphNodePortKey(
+  ref: StrategyGraphNodePortRef,
+): string {
+  return `${ref.nodeId}:${ref.portName}`;
+}
+
 export type StrategyGraphNodeEdge = {
   from: StrategyGraphNodePortRef;
   to: StrategyGraphNodePortRef;
@@ -161,6 +167,101 @@ export class StrategyGraph {
       }
     }
   }
+}
+
+export function extractSubgraph(
+  graph: StrategyGraph,
+  actionNode: ActionNode,
+): StrategyGraph {
+  if (!graph.nodes.has(actionNode.id)) {
+    throw new Error(`Action node '${actionNode.id}' does not exist in graph`);
+  }
+
+  const visited = new Set<StrategyGraphNodeId>();
+  const selectedEdges: StrategyGraphNodeEdge[] = [];
+  const stack: StrategyGraphNodeId[] = [actionNode.id];
+
+  while (stack.length > 0) {
+    const nodeId = stack.pop() as StrategyGraphNodeId;
+    if (visited.has(nodeId)) {
+      continue;
+    }
+    visited.add(nodeId);
+
+    for (const edge of graph.edges) {
+      if (edge.to.nodeId !== nodeId) {
+        continue;
+      }
+      selectedEdges.push(edge);
+      if (!visited.has(edge.from.nodeId)) {
+        stack.push(edge.from.nodeId);
+      }
+    }
+  }
+
+  const nodes = Array.from(visited).map((id) => {
+    const node = graph.nodes.get(id);
+    if (!node) {
+      throw new Error(`Subgraph references missing node '${id}'`);
+    }
+    return node;
+  });
+
+  const edges = selectedEdges.filter(
+    (edge) => visited.has(edge.from.nodeId) && visited.has(edge.to.nodeId),
+  );
+
+  return new StrategyGraph(nodes, edges);
+}
+
+export function topologicalSort(
+  nodes: readonly StrategyGraphNode[],
+  edges: readonly StrategyGraphNodeEdge[],
+): StrategyGraphNode[] {
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+  const indegree = new Map<StrategyGraphNodeId, number>(
+    nodes.map((node) => [node.id, 0]),
+  );
+  const outgoing = new Map<StrategyGraphNodeId, StrategyGraphNodeId[]>();
+
+  for (const edge of edges) {
+    if (!nodeMap.has(edge.from.nodeId) || !nodeMap.has(edge.to.nodeId)) {
+      continue;
+    }
+    indegree.set(edge.to.nodeId, (indegree.get(edge.to.nodeId) ?? 0) + 1);
+    const current = outgoing.get(edge.from.nodeId) ?? [];
+    current.push(edge.to.nodeId);
+    outgoing.set(edge.from.nodeId, current);
+  }
+
+  const queue = Array.from(indegree.entries())
+    .filter(([, degree]) => degree === 0)
+    .map(([nodeId]) => nodeId);
+  const sorted: StrategyGraphNode[] = [];
+
+  while (queue.length > 0) {
+    const nodeId = queue.shift() as StrategyGraphNodeId;
+    const node = nodeMap.get(nodeId);
+    if (!node) {
+      continue;
+    }
+    sorted.push(node);
+
+    const targets = outgoing.get(nodeId) ?? [];
+    for (const targetId of targets) {
+      const nextDegree = (indegree.get(targetId) ?? 0) - 1;
+      indegree.set(targetId, nextDegree);
+      if (nextDegree === 0) {
+        queue.push(targetId);
+      }
+    }
+  }
+
+  if (sorted.length !== nodes.length) {
+    throw new Error("Cycle detected while topologically sorting StrategyGraph");
+  }
+
+  return sorted;
 }
 
 export class StrategyGraphBuilder {

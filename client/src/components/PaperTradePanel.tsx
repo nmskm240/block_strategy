@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import type { BacktestResult, Trade } from "@/types";
+import type { BacktestResult } from "@/types";
+import { Trade } from "shared";
 
 type PaperTradePanelProps = {
   symbol: string;
@@ -241,7 +242,6 @@ export function PaperTradePanel({
                   {t.side}
                 </span>
                 <span style={{ width: 56 }}>${t.price.toFixed(2)}</span>
-                <span style={{ width: 36 }}>x{t.size}</span>
                 <span style={{ opacity: 0.6 }}>{t.time}</span>
               </div>
             ))

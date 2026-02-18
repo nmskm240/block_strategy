@@ -24,7 +24,6 @@ export type Timeframe = z.infer<typeof Timeframe>;
 export const TradeSchema = z.object({
   side: TradeSide,
   price: z.number(),
-  size: z.number().min(0),
   time: z.string(),
 });
 

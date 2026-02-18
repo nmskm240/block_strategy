@@ -1,0 +1,356 @@
+import {
+  ActionNode,
+  extractSubgraph,
+  topologicalSort,
+  type StrategyGraph,
+  type StrategyGraphNode,
+  type StrategyGraphNodeEdge,
+  type StrategyGraphNodeId,
+  StrategyGraphNodePortKey,
+} from "@server/domain/strategyGraph";
+import {
+  IndicatorRegistry,
+  NodeKind,
+  type IndicatorKind,
+  type IndicatorNodeSpec,
+  type LogicalNodeSpec,
+  type OHLCV,
+  type OhlcvNodeSpec,
+} from "@shared/types";
+import { DataFrame, Series, type ISeries } from "data-forge";
+import "data-forge-indicators";
+import type { IBar } from "grademark";
+import { match } from "ts-pattern";
+
+type NumericSeries = ISeries<number, number>;
+type BooleanSeries = ISeries<number, boolean>;
+type AnySeries = ISeries<number, unknown>;
+type NodeSeriesMap = Map<string, AnySeries>;
+
+export type StrategySignalBar = IBar & {
+  entrySignal: boolean;
+  entryDirection: number;
+  exitSignal: boolean;
+};
+
+type CompileContext = {
+  graph: StrategyGraph;
+  inputDf: DataFrame<number, OHLCV>;
+  incomingByTargetPort: Map<string, StrategyGraphNodeEdge>;
+  nodeSeriesMemo: Map<StrategyGraphNodeId, NodeSeriesMap>;
+};
+
+function asBooleanSeries(source: AnySeries): BooleanSeries {
+  return new Series(
+    source.toArray().map((value) => Boolean(value)),
+  ) as BooleanSeries;
+}
+
+function asNumericSeries(
+  source: AnySeries,
+  errorContext: string,
+): NumericSeries {
+  const values = source.toArray();
+  for (let i = 0; i < values.length; i += 1) {
+    const value = values[i];
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      throw new Error(`${errorContext}: expected numeric series values`);
+    }
+  }
+  return source as NumericSeries;
+}
+
+function getActionKind(spec: ActionNode["spec"]): "ENTRY" | "EXIT" {
+  const maybeKind = (spec as { kind?: unknown }).kind;
+  if (maybeKind === "ENTRY" || maybeKind === "EXIT") {
+    return maybeKind;
+  }
+  return (spec as { actionType?: string }).actionType === "marketEntry"
+    ? "ENTRY"
+    : "EXIT";
+}
+
+function getActionDirection(spec: ActionNode["spec"]): "LONG" | "SHORT" {
+  const maybeDirection = (spec as { direction?: unknown }).direction;
+  if (maybeDirection === "LONG" || maybeDirection === "SHORT") {
+    return maybeDirection;
+  }
+  const legacy = spec as {
+    actionType?: string;
+    params?: { side?: "BUY" | "SELL" };
+  };
+  return legacy.actionType === "marketEntry" && legacy.params?.side === "SELL"
+    ? "SHORT"
+    : "LONG";
+}
+
+function getNodePortSeries(
+  nodeId: StrategyGraphNodeId,
+  portName: string,
+  context: CompileContext,
+): AnySeries {
+  const nodeOutputs = context.nodeSeriesMemo.get(nodeId);
+  if (!nodeOutputs) {
+    const node = context.graph.nodes.get(nodeId);
+    if (!node) {
+      throw new Error(`Unknown source node: ${nodeId}`);
+    }
+    compileNode(node, context);
+  }
+
+  const compiled = context.nodeSeriesMemo.get(nodeId);
+  const series = compiled?.get(portName);
+  if (!series) {
+    throw new Error(
+      `Missing compiled output port '${portName}' for node '${nodeId}'`,
+    );
+  }
+  return series;
+}
+
+export function compileNode(
+  node: StrategyGraphNode,
+  context: CompileContext,
+): NodeSeriesMap {
+  const cached = context.nodeSeriesMemo.get(node.id);
+  if (cached) {
+    return cached;
+  }
+
+  const outputs = new Map<string, AnySeries>();
+
+  match(node.spec)
+    .with({ kind: NodeKind.OHLCV }, (spec) =>
+      compileOhlcvNode(spec, context, outputs),
+    )
+    .with({ kind: NodeKind.INDICATOR }, (spec) =>
+      compileIndicatorNode(node.id, spec, context, outputs),
+    )
+    .with({ kind: NodeKind.LOGICAL }, (spec) =>
+      compileLogicalNode(node.id, spec, context, outputs),
+    )
+    .with({ kind: NodeKind.ACTION }, () => {
+      // Action nodes are control sinks and do not emit series.
+    })
+    .exhaustive();
+
+  context.nodeSeriesMemo.set(node.id, outputs);
+  return outputs;
+}
+
+function compileOhlcvNode(
+  spec: OhlcvNodeSpec,
+  context: CompileContext,
+  outputs: NodeSeriesMap,
+): void {
+  const column = spec.params.kind.toLowerCase();
+  outputs.set("value", context.inputDf.getSeries(column) as AnySeries);
+}
+
+function compileIndicatorNode(
+  nodeId: StrategyGraphNodeId,
+  spec: IndicatorNodeSpec,
+  context: CompileContext,
+  outputs: NodeSeriesMap,
+): void {
+  const getInput = (portName: string): NumericSeries => {
+    const inputEdge = context.incomingByTargetPort.get(
+      StrategyGraphNodePortKey({ nodeId, portName }),
+    );
+    if (!inputEdge) {
+      throw new Error(
+        `Missing input '${portName}' for indicator node '${nodeId}'`,
+      );
+    }
+    const source = getNodePortSeries(
+      inputEdge.from.nodeId,
+      inputEdge.from.portName,
+      context,
+    );
+    return asNumericSeries(
+      source,
+      `Indicator node '${nodeId}' input '${portName}'`,
+    );
+  };
+
+  const source = getInput("source");
+  match(spec.indicatorType as IndicatorKind)
+    .with("sma", () => {
+      const typed = IndicatorRegistry.sma.parse(spec);
+      outputs.set("value", source.sma(typed.params.period) as AnySeries);
+    })
+    .with("rsi", () => {
+      const typed = IndicatorRegistry.rsi.parse(spec);
+      outputs.set("value", source.rsi(typed.params.period) as AnySeries);
+    })
+    .with("bband", () => {
+      const typed = IndicatorRegistry.bband.parse(spec);
+      const stdDev = typed.params.stdDev;
+      const bands = source.bollinger(typed.params.period, stdDev, stdDev);
+      outputs.set("upperBand", bands.getSeries("upper") as AnySeries);
+      outputs.set("middleBand", bands.getSeries("middle") as AnySeries);
+      outputs.set("lowerBand", bands.getSeries("lower") as AnySeries);
+    })
+    .exhaustive();
+}
+
+function compileLogicalNode(
+  nodeId: StrategyGraphNodeId,
+  spec: LogicalNodeSpec,
+  context: CompileContext,
+  outputs: NodeSeriesMap,
+): void {
+  const leftEdge = context.incomingByTargetPort.get(
+    StrategyGraphNodePortKey({ nodeId, portName: "left" }),
+  );
+  const rightEdge = context.incomingByTargetPort.get(
+    StrategyGraphNodePortKey({ nodeId, portName: "right" }),
+  );
+  if (!leftEdge || !rightEdge) {
+    throw new Error(`Logical node '${nodeId}' is missing left/right inputs`);
+  }
+
+  const left = asNumericSeries(
+    getNodePortSeries(leftEdge.from.nodeId, leftEdge.from.portName, context),
+    `Logical node '${nodeId}' left input`,
+  ).toArray();
+  const right = asNumericSeries(
+    getNodePortSeries(rightEdge.from.nodeId, rightEdge.from.portName, context),
+    `Logical node '${nodeId}' right input`,
+  ).toArray();
+
+  const out = left.map((leftValue, index) => {
+    const rightValue = right[index];
+    if (rightValue === undefined) {
+      return false;
+    }
+    switch (spec.operator) {
+      case "==":
+        return leftValue === rightValue;
+      case "!=":
+        return leftValue !== rightValue;
+      case "<":
+        return leftValue < rightValue;
+      case "<=":
+        return leftValue <= rightValue;
+      case ">":
+        return leftValue > rightValue;
+      case ">=":
+        return leftValue >= rightValue;
+      default: {
+        const unknown: never = spec.operator;
+        throw new Error(`Unknown logical operator '${unknown}'`);
+      }
+    }
+  });
+  outputs.set("true", new Series(out) as AnySeries);
+}
+
+export function compileSignals(
+  graph: StrategyGraph,
+  inputDf: DataFrame<number, OHLCV>,
+): DataFrame<number, StrategySignalBar> {
+  const incomingByTargetPort = new Map<string, StrategyGraphNodeEdge>();
+  for (const edge of graph.edges) {
+    incomingByTargetPort.set(StrategyGraphNodePortKey(edge.to), edge);
+  }
+
+  const context: CompileContext = {
+    graph,
+    inputDf,
+    incomingByTargetPort,
+    nodeSeriesMemo: new Map(),
+  };
+
+  const actions = Array.from(graph.nodes.values()).filter(
+    (node): node is ActionNode => node instanceof ActionNode,
+  );
+  const entryActions = actions.filter(
+    (node) => getActionKind(node.spec) === "ENTRY",
+  );
+  const exitActions = actions.filter(
+    (node) => getActionKind(node.spec) === "EXIT",
+  );
+
+  const rowCount = inputDf.count();
+  const defaultFalse = new Series<number, boolean>(
+    new Array(rowCount).fill(false),
+  );
+
+  const triggerFor = (actionNode: ActionNode): BooleanSeries => {
+    const subgraph = extractSubgraph(graph, actionNode);
+    const sortedNodes = topologicalSort(
+      Array.from(subgraph.nodes.values()),
+      subgraph.edges,
+    );
+
+    for (const node of sortedNodes) {
+      if (node instanceof ActionNode) {
+        continue;
+      }
+      compileNode(node, context);
+    }
+
+    const triggerEdge = incomingByTargetPort.get(
+      StrategyGraphNodePortKey({ nodeId: actionNode.id, portName: "trigger" }),
+    );
+    if (!triggerEdge) {
+      return defaultFalse;
+    }
+
+    const series = getNodePortSeries(
+      triggerEdge.from.nodeId,
+      triggerEdge.from.portName,
+      context,
+    );
+    return asBooleanSeries(series);
+  };
+
+  const entryTriggerMap = entryActions.map((action) => ({
+    action,
+    trigger: triggerFor(action).toArray(),
+  }));
+  const exitTriggers = exitActions.map((action) =>
+    triggerFor(action).toArray(),
+  );
+
+  const entrySignal = new Array<boolean>(rowCount).fill(false);
+  const entryDirection = new Array<number>(rowCount).fill(1);
+  const exitSignal = new Array<boolean>(rowCount).fill(false);
+
+  for (let i = 0; i < rowCount; i += 1) {
+    let longTriggered = false;
+    let shortTriggered = false;
+    for (const { action, trigger } of entryTriggerMap) {
+      if (!trigger[i]) {
+        continue;
+      }
+      if (getActionDirection(action.spec) === "SHORT") {
+        shortTriggered = true;
+      } else {
+        longTriggered = true;
+      }
+    }
+    entrySignal[i] = longTriggered || shortTriggered;
+    entryDirection[i] = shortTriggered ? -1 : 1; // SHORT overrides LONG.
+  }
+
+  for (let i = 0; i < rowCount; i += 1) {
+    let triggered = false;
+    for (const trigger of exitTriggers) {
+      if (trigger[i]) {
+        triggered = true;
+        break;
+      }
+    }
+    exitSignal[i] = triggered;
+  }
+
+  return inputDf
+    .withSeries("entrySignal", new Series(entrySignal))
+    .withSeries("entryDirection", new Series(entryDirection))
+    .withSeries("exitSignal", new Series(exitSignal)) as DataFrame<
+    number,
+    StrategySignalBar
+  >;
+}

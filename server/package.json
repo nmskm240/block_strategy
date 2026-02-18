@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "chai": "^5.2.0",
+    "data-forge-indicators": "^0.2.7",
     "grademark": "^0.3.0",
     "hono": "^4.10.8",
     "shared": "workspace:*",
