@@ -1,17 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRete } from "rete-react-plugin";
+import { BacktestRunButton } from "@/components/BacktestRunButton";
 import { PaperTradePanel } from "@/components/PaperTradePanel";
 import { TradingViewPanel } from "@/components/TradingViewPanel";
-import { BacktestApiClient } from "@/services/backtestClient";
 import { createEditor } from "@/lib/rete";
 import type { EditorHandle } from "@/lib/rete";
+import type { BacktestResult } from "@/types";
 
 function App() {
   const [ref, editorHandle] = useRete<EditorHandle>(createEditor);
   const [symbol, setSymbol] = useState("NASDAQ:AAPL");
   const [panelWidth, setPanelWidth] = useState(420);
   const [chartHeight, setChartHeight] = useState(360);
-  const backtestClient = useMemo(() => new BacktestApiClient(), []);
+  const [backtest, setBacktest] = useState<BacktestResult | null>(null);
+  const [backtestError, setBacktestError] = useState<string | null>(null);
   const dragState = useRef<{
     resizingWidth: boolean;
     resizingHeight: boolean;
@@ -55,22 +57,6 @@ function App() {
     };
   }, []);
 
-  async function handleRunBacktest() {
-    if (!editorHandle) return null;
-    const graph = editorHandle.getGraph();
-    const until = new Date();
-    const since = new Date(until.getTime() - 60 * 60 * 1000 * 60);
-    return backtestClient.runBacktest({
-      graph,
-      environment: {
-        symbol,
-        timeframe: "1h",
-        testRange: { since, until },
-        cash: 10000,
-      },
-    });
-  }
-
   return (
     <div
       className="App"
@@ -82,7 +68,18 @@ function App() {
         overflow: "hidden",
       }}
     >
-      <div ref={ref} style={{ height: "100vh", width: "100vw" }}></div>
+      <div style={{ height: "100vh", width: "100vw", position: "relative" }}>
+        <div ref={ref} style={{ height: "100%", width: "100%" }}></div>
+        <BacktestRunButton
+          symbol={symbol}
+          editorHandle={editorHandle}
+          onSuccess={(result) => {
+            setBacktest(result);
+            setBacktestError(null);
+          }}
+          onError={setBacktestError}
+        />
+      </div>
       <div
         style={{
           width: panelWidth,
@@ -136,8 +133,8 @@ function App() {
           <PaperTradePanel
             symbol={symbol}
             onSymbolChange={setSymbol}
-            canRunBacktest={Boolean(editorHandle)}
-            onRunBacktest={handleRunBacktest}
+            backtest={backtest}
+            backtestError={backtestError}
           />
         </div>
       </div>

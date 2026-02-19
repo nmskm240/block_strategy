@@ -1,0 +1,22 @@
+.backtest-run-button {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 10;
+  display: inline-flex;
+  width: 3.25rem;
+  height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid #2c387f;
+  background: #3a4aa8;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  transition: transform 150ms ease;
+}
+
+.backtest-run-button:disabled {
+  cursor: not-allowed;
+  background: rgba(58, 74, 168, 0.5);
+}
