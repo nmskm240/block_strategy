@@ -72,7 +72,6 @@ export async function createEditor(container: HTMLElement) {
           portName: String(connection.targetInput),
         },
       }));
-
       return { nodes, edges };
     },
   };

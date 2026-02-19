@@ -349,8 +349,9 @@ export function compileSignals(
   return inputDf
     .withSeries("entrySignal", new Series(entrySignal))
     .withSeries("entryDirection", new Series(entryDirection))
-    .withSeries("exitSignal", new Series(exitSignal)) as DataFrame<
-    number,
-    StrategySignalBar
-  >;
+    .withSeries("exitSignal", new Series(exitSignal))
+    .withSeries(
+      "time",
+      inputDf.getSeries("timestamp").select((timestamp) => new Date(timestamp)),
+    ) as DataFrame<number, StrategySignalBar>;
 }

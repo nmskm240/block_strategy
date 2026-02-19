@@ -1,5 +1,4 @@
-import type { OHLCV, Timeframe } from "@shared/types";
-import type { DateRange } from "./dateRange";
+import type { DateRange, OHLCV, Timeframe } from "@shared/types";
 import { match } from "ts-pattern";
 
 export interface IOhlcvRepository {

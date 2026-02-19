@@ -1,11 +1,31 @@
 import * as z from "zod";
 import { Graph } from "./graph";
-import { TradeSchema } from "./trade";
+import { Timeframe, TradeSchema } from "./trade";
+
+export const DateRangeSchema = z
+  .object({
+    since: z.coerce.date(),
+    until: z.coerce.date(),
+  })
+  .refine(({ since, until }) => since < until, {
+    message: "since must be earlier than until",
+    path: ["until"],
+  });
+
+export type DateRange = z.infer<typeof DateRangeSchema>;
+
+export const BacktestEnvironmentSchema = z.object({
+  symbol: z.string().trim().min(1, "symbol is required"),
+  timeframe: Timeframe.default("1h"),
+  testRange: DateRangeSchema,
+  cash: z.number().positive().default(10000),
+});
+
+export type BacktestEnvironment = z.infer<typeof BacktestEnvironmentSchema>;
 
 export const BacktestRequestSchema = z.object({
-  symbol: z.string().trim().min(1, "symbol is required"),
   graph: Graph,
-  initialCash: z.number().finite().positive().optional(),
+  environment: BacktestEnvironmentSchema,
 });
 
 export type BacktestRequest = z.infer<typeof BacktestRequestSchema>;

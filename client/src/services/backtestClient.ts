@@ -1,12 +1,11 @@
 import { BacktestRequestSchema, BacktestResponseSchema } from "shared";
 import type { BacktestResult } from "@/types";
-import type { Graph } from "shared";
+import type { BacktestEnvironment, Graph } from "shared";
 import { ApiClient } from "@/services/apiClient";
 
 export type RunBacktestInput = {
-  symbol: string;
   graph: Graph;
-  initialCash?: number;
+  environment: BacktestEnvironment;
 };
 
 export class BacktestApiClient {

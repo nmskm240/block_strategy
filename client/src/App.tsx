@@ -58,7 +58,17 @@ function App() {
   async function handleRunBacktest() {
     if (!editorHandle) return null;
     const graph = editorHandle.getGraph();
-    return backtestClient.runBacktest({ graph, symbol });
+    const until = new Date();
+    const since = new Date(until.getTime() - 60 * 60 * 1000 * 60);
+    return backtestClient.runBacktest({
+      graph,
+      environment: {
+        symbol,
+        timeframe: "1h",
+        testRange: { since, until },
+        cash: 10000,
+      },
+    });
   }
 
   return (

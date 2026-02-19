@@ -15,27 +15,30 @@ export type SelectControlOptions = {
 };
 
 export class SelectControl extends ClassicPreset.Control {
-  value?: string;
+  value: string;
   readonly: boolean;
   options: SelectOption[];
   initial?: string;
   private onChange?: (value: string) => void;
 
   constructor(options: SelectControlOptions) {
+    if (options.options.length <= 0) {
+      throw new Error();
+    }
+
     super();
     this.options = options.options;
     this.readonly = options.readonly ?? false;
     this.initial = options.initial;
     this.onChange = options.change;
-
-    if (typeof options.initial !== "undefined") {
-      this.value = options.initial;
-    } else if (this.options.length > 0) {
-      this.value = this.options[0]?.value;
-    }
+    this.value = options.initial ?? this.options[0].value;
   }
 
   setValue(value?: string) {
+    if (!value) {
+      return;
+    }
+
     this.value = value;
     if (this.onChange && typeof value !== "undefined") {
       this.onChange(value);
@@ -50,7 +53,7 @@ export function SelectControlComponent(props: { data: SelectControl }) {
   useEffect(() => {
     setValue(data.value);
   }, [data.value]);
-  
+
   return (
     <select
       value={value}
