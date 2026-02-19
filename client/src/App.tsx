@@ -10,7 +10,7 @@ import type { BacktestResult } from "@/types";
 function App() {
   const [ref, editorHandle] = useRete<EditorHandle>(createEditor);
   const [symbol, setSymbol] = useState("NASDAQ:AAPL");
-  const [panelWidth, setPanelWidth] = useState(420);
+  const [panelWidth, setPanelWidth] = useState(500);
   const [chartHeight, setChartHeight] = useState(360);
   const [backtest, setBacktest] = useState<BacktestResult | null>(null);
   const [backtestError, setBacktestError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ function App() {
         const next =
           dragState.current.startWidth -
           (event.clientX - dragState.current.startX);
-        setPanelWidth(Math.min(720, Math.max(320, next)));
+        setPanelWidth(Math.min(860, Math.max(360, next)));
       }
       if (dragState.current.resizingHeight) {
         const next =
@@ -65,77 +65,101 @@ function App() {
         width: "100vw",
         position: "relative",
         display: "flex",
+        flexDirection: "column",
         overflow: "hidden",
       }}
     >
-      <div style={{ height: "100vh", width: "100vw", position: "relative" }}>
-        <div ref={ref} style={{ height: "100%", width: "100%" }}></div>
-        <BacktestRunButton
-          symbol={symbol}
-          editorHandle={editorHandle}
-          onSuccess={(result) => {
-            setBacktest(result);
-            setBacktestError(null);
-          }}
-          onError={setBacktestError}
-        />
-      </div>
-      <div
+      <header
         style={{
-          width: panelWidth,
-          minWidth: 320,
-          maxWidth: 720,
-          padding: 12,
+          height: 60,
           display: "flex",
-          flexDirection: "column",
-          gap: 12,
-          background: "rgba(9, 9, 12, 0.95)",
-          borderLeft: "1px solid rgba(255, 255, 255, 0.08)",
-          position: "relative",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 12px",
+          background: "rgba(11, 11, 16, 0.96)",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+          color: "#fff",
+          flexShrink: 0,
         }}
-        onPointerDown={(event) => event.stopPropagation()}
       >
-        <div
-          style={{
-            position: "absolute",
-            left: -6,
-            top: 0,
-            width: 12,
-            height: "100%",
-            cursor: "ew-resize",
-            zIndex: 5,
-          }}
-          onPointerDown={(event) => {
-            event.preventDefault();
-            dragState.current.resizingWidth = true;
-            dragState.current.startX = event.clientX;
-            dragState.current.startWidth = panelWidth;
-          }}
-        />
-        <div style={{ height: chartHeight, minHeight: 220 }}>
-          <TradingViewPanel symbol={symbol} />
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 16, fontWeight: 600, letterSpacing: 0.2 }}>
+            Block Strategy
+          </span>
+        </div>
+        <div style={{ opacity: 0.7, fontSize: 12 }}>{symbol}</div>
+      </header>
+
+      <div style={{ flex: 1, minHeight: 0, display: "flex", overflow: "hidden" }}>
+        <div style={{ flex: 1, minWidth: 0, position: "relative" }}>
+          <div ref={ref} style={{ height: "100%", width: "100%" }}></div>
+          <BacktestRunButton
+            symbol={symbol}
+            editorHandle={editorHandle}
+            onSuccess={(result) => {
+              setBacktest(result);
+              setBacktestError(null);
+            }}
+            onError={setBacktestError}
+          />
         </div>
         <div
           style={{
-            height: 10,
-            cursor: "ns-resize",
-            background: "rgba(255, 255, 255, 0.05)",
-            borderRadius: 6,
+            width: panelWidth,
+            minWidth: 360,
+            maxWidth: 860,
+            padding: 12,
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            background: "rgba(9, 9, 12, 0.95)",
+            borderLeft: "1px solid rgba(255, 255, 255, 0.08)",
+            position: "relative",
           }}
-          onPointerDown={(event) => {
-            event.preventDefault();
-            dragState.current.resizingHeight = true;
-            dragState.current.startY = event.clientY;
-            dragState.current.startHeight = chartHeight;
-          }}
-        />
-        <div style={{ flex: 1, minHeight: 260 }}>
-          <PaperTradePanel
-            symbol={symbol}
-            onSymbolChange={setSymbol}
-            backtest={backtest}
-            backtestError={backtestError}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <div
+            style={{
+              position: "absolute",
+              left: -6,
+              top: 0,
+              width: 12,
+              height: "100%",
+              cursor: "ew-resize",
+              zIndex: 5,
+            }}
+            onPointerDown={(event) => {
+              event.preventDefault();
+              dragState.current.resizingWidth = true;
+              dragState.current.startX = event.clientX;
+              dragState.current.startWidth = panelWidth;
+            }}
           />
+          <div style={{ height: chartHeight, minHeight: 220 }}>
+            <TradingViewPanel symbol={symbol} />
+          </div>
+          <div
+            style={{
+              height: 10,
+              cursor: "ns-resize",
+              background: "rgba(255, 255, 255, 0.05)",
+              borderRadius: 6,
+            }}
+            onPointerDown={(event) => {
+              event.preventDefault();
+              dragState.current.resizingHeight = true;
+              dragState.current.startY = event.clientY;
+              dragState.current.startHeight = chartHeight;
+            }}
+          />
+          <div style={{ flex: 1, minHeight: 260 }}>
+            <PaperTradePanel
+              symbol={symbol}
+              onSymbolChange={setSymbol}
+              backtest={backtest}
+              backtestError={backtestError}
+            />
+          </div>
         </div>
       </div>
     </div>
