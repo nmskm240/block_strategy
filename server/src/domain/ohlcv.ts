@@ -3,6 +3,7 @@ import { match } from "ts-pattern";
 
 export interface IOhlcvRepository {
   getOhlcvs(symbol: string, range: DateRange): Promise<OHLCV[]>;
+  putOhlcvs(symbol: string, ohlcvs: Iterable<OHLCV>): Promise<void>;
 }
 
 function toMillSec(timeframe: Timeframe) {

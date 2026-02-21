@@ -6,3 +6,11 @@ compatibility_flags = ["nodejs_compat"]
 [dev]
 ip = "0.0.0.0"
 port = 3000
+
+[vars]
+OHLCV_OBJECT_PREFIX = "ohlcv/"
+
+[[r2_buckets]]
+binding = "OHLCV_BUCKET"
+bucket_name = "block-strategy-ohlcv"
+preview_bucket_name = "block-strategy-ohlcv-preview"
