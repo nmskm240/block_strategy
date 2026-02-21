@@ -20,3 +20,74 @@
   cursor: not-allowed;
   background: rgba(58, 74, 168, 0.5);
 }
+
+.backtest-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.backtest-modal {
+  width: min(92vw, 420px);
+  background: #111724;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  padding: 16px;
+  color: #e7edf8;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+.backtest-modal-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.backtest-modal-label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.85;
+  margin: 10px 0 6px;
+}
+
+.backtest-modal-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  color: #f5f7fb;
+  padding: 8px 10px;
+}
+
+.backtest-modal-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.backtest-modal-cancel,
+.backtest-modal-submit {
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #fff;
+}
+
+.backtest-modal-cancel {
+  background: #2a3244;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.backtest-modal-submit {
+  background: #3a4aa8;
+  border: 1px solid #2c387f;
+}
+
+.backtest-modal-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

@@ -76,52 +76,6 @@
   gap: 8px;
 }
 
-.admin-date-picker {
-  position: relative;
-}
-
-.admin-date-summary {
-  list-style: none;
-  cursor: pointer;
-  user-select: none;
-}
-
-.admin-date-summary::-webkit-details-marker {
-  display: none;
-}
-
-.admin-date-popover {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 8px);
-  z-index: 20;
-  background: #101722;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 10px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-  padding: 8px;
-}
-
-.admin-date-popover .rdp-root {
-  --rdp-accent-color: #2f78ff;
-  --rdp-background-color: rgba(47, 120, 255, 0.2);
-  --rdp-day_button-border-radius: 8px;
-  --rdp-day-height: 36px;
-  --rdp-day-width: 36px;
-  --rdp-day_button-height: 36px;
-  --rdp-day_button-width: 36px;
-  --rdp-outside-opacity: 0.4;
-  --rdp-today-color: #9ad5ff;
-  color: #e6edf7;
-}
-
-.admin-date-popover .rdp-dropdown {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 6px;
-  color: #e6edf7;
-}
-
 .admin-field {
   border-radius: 8px;
   padding: 8px 10px;

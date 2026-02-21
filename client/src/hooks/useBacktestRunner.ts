@@ -5,14 +5,18 @@ import type { BacktestResult } from "@/types";
 import type { SupportedSymbol } from "shared";
 
 type UseBacktestRunnerArgs = {
-  symbol: SupportedSymbol;
   editorHandle: EditorHandle | null;
   onSuccess: (result: BacktestResult) => void;
   onError: (message: string) => void;
 };
 
+type RunBacktestParams = {
+  symbol: SupportedSymbol;
+  since: Date;
+  until: Date;
+};
+
 export function useBacktestRunner({
-  symbol,
   editorHandle,
   onSuccess,
   onError,
@@ -20,13 +24,11 @@ export function useBacktestRunner({
   const [isRunning, setIsRunning] = useState(false);
   const backtestClient = useBacktestApiClient();
 
-  async function runBacktest() {
+  async function runBacktest({ symbol, since, until }: RunBacktestParams) {
     if (!editorHandle || isRunning) return;
 
     setIsRunning(true);
     const graph = editorHandle.getGraph();
-    const until = new Date();
-    const since = new Date(until.getTime() - 60 * 60 * 1000 * 60);
 
     try {
       const result = await backtestClient.runBacktest({

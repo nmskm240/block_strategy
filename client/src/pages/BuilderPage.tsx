@@ -110,6 +110,7 @@ export function BuilderPage() {
           <div ref={ref} style={{ height: "100%", width: "100%" }}></div>
           <BacktestRunButton
             symbol={symbol}
+            onSymbolChange={setSymbol}
             editorHandle={editorHandle}
             onSuccess={(result) => {
               setBacktest(result);

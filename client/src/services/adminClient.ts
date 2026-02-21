@@ -20,7 +20,8 @@ export type SeedOhlcvInput = {
 
 export type ImportTwelveDataInput = {
   symbol: SupportedSymbol;
-  date: string;
+  since: string;
+  until: string;
 };
 
 export class AdminApiClient {

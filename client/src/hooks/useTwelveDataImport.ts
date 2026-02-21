@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAdminApiClient } from "@/contexts/apiClientContext";
-import type { SupportedSymbol } from "shared";
+import type { DateRange, SupportedSymbol } from "shared";
 
 type UseTwelveDataImportOptions = {
   onSuccess?: () => Promise<void> | void;
@@ -11,7 +11,9 @@ export function useTwelveDataImport(
 ) {
   const api = useAdminApiClient();
   const [symbol, setSymbol] = useState<SupportedSymbol>("AAPL");
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const [range, setRange] = useState<DateRange>({ since: today, until: today });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -21,9 +23,15 @@ export function useTwelveDataImport(
     setResult(null);
     setError(null);
     try {
-      const imported = await api.importFromTwelveData({ symbol, date });
+      const since = range.since.toISOString().slice(0, 10);
+      const until = range.until.toISOString().slice(0, 10);
+      const imported = await api.importFromTwelveData({
+        symbol,
+        since,
+        until,
+      });
       setResult(
-        `${imported.symbol} ${imported.date}: ${imported.importedCount}件を取込 (${imported.since} - ${imported.until})`,
+        `${imported.symbol}: ${imported.importedCount}件を取込 (${imported.since} - ${imported.until})`,
       );
       await options.onSuccess?.();
     } catch (cause) {
@@ -37,8 +45,8 @@ export function useTwelveDataImport(
   return {
     symbol,
     setSymbol,
-    date,
-    setDate,
+    range,
+    setRange,
     loading,
     result,
     error,

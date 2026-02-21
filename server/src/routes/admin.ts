@@ -59,10 +59,10 @@ type TwelveDataTimeSeriesResponse = {
   message?: string;
 };
 
-function toUtcWindow(date: string): { start: string; end: string } {
+function toUtcWindow(since: string, until: string): { start: string; end: string } {
   return {
-    start: `${date} 00:00:00`,
-    end: `${date} 23:59:59`,
+    start: `${since} 00:00:00`,
+    end: `${until} 23:59:59`,
   };
 }
 
@@ -102,7 +102,7 @@ export const adminRoute = new Hono<{ Variables: AdminRouteVariables }>()
     }
 
     const baseUrl = env.TWELVE_DATA_BASE_URL ?? "https://api.twelvedata.com";
-    const window = toUtcWindow(request.date);
+    const window = toUtcWindow(request.since, request.until);
     const params = new URLSearchParams();
     params.set("symbol", request.symbol);
     params.set("interval", "1min");
@@ -133,10 +133,9 @@ export const adminRoute = new Hono<{ Variables: AdminRouteVariables }>()
       message: "TwelveData OHLCV imported",
       data: {
         symbol: request.symbol,
-        date: request.date,
+        since: request.since,
+        until: request.until,
         importedCount: ohlcvs.length,
-        since: new Date(ohlcvs[0]?.timestamp ?? Date.now()).toISOString(),
-        until: new Date(ohlcvs[ohlcvs.length - 1]?.timestamp ?? Date.now()).toISOString(),
       },
     };
     return c.json(ImportTwelveDataResponseSchema.parse(importResponse), {

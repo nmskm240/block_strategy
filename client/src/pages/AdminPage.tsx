@@ -1,16 +1,13 @@
 import { Link } from "react-router-dom";
-import { useRef } from "react";
-import { DayPicker } from "react-day-picker";
+import { DateRangePicker } from "@/components/DateRangePicker";
 import { OhlcvLightweightChart } from "@/components/OhlcvLightweightChart";
 import { useOhlcvFileBrowser } from "@/hooks/useOhlcvFileBrowser";
 import { useSeedOhlcv } from "@/hooks/useSeedOhlcv";
 import { useTwelveDataImport } from "@/hooks/useTwelveDataImport";
 import { SUPPORTED_SYMBOLS } from "shared";
-import "react-day-picker/dist/style.css";
 import "@/styles/pages/adminPage.css";
 
 export function AdminPage() {
-  const datePickerDetailsRef = useRef<HTMLDetailsElement | null>(null);
   const {
     files,
     filesLoading,
@@ -28,19 +25,13 @@ export function AdminPage() {
   const {
     symbol: tdSymbol,
     setSymbol: setTdSymbol,
-    date: tdDate,
-    setDate: setTdDate,
+    range: tdRange,
+    setRange: setTdRange,
     loading: tdLoading,
     result: tdResult,
     error: tdError,
     run: onImportTwelveDataClick,
   } = useTwelveDataImport({ onSuccess: refreshFiles });
-
-  const selectedDate = tdDate ? new Date(`${tdDate}T00:00:00`) : undefined;
-
-  function formatDate(value: Date): string {
-    return value.toISOString().slice(0, 10);
-  }
 
   return (
     <div className="admin-page">
@@ -86,25 +77,7 @@ export function AdminPage() {
                   </option>
                 ))}
               </select>
-              <details ref={datePickerDetailsRef} className="admin-date-picker">
-                <summary className="admin-field admin-date-summary">{tdDate}</summary>
-                <div className="admin-date-popover">
-                  <DayPicker
-                    mode="single"
-                    selected={selectedDate}
-                    captionLayout="dropdown"
-                    fromYear={2000}
-                    toYear={new Date().getFullYear() + 1}
-                    onSelect={(date) => {
-                      if (!date) return;
-                      setTdDate(formatDate(date));
-                      if (datePickerDetailsRef.current) {
-                        datePickerDetailsRef.current.open = false;
-                      }
-                    }}
-                  />
-                </div>
-              </details>
+              <DateRangePicker value={tdRange} onChange={setTdRange} />
             </div>
             <button
               type="button"

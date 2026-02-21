@@ -98,9 +98,11 @@ export type OhlcvFileContentResponse = z.infer<
 
 export const ImportTwelveDataRequestSchema = z.object({
   symbol: SupportedSymbolSchema,
-  date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "date must be in YYYY-MM-DD format"),
+  since: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "since must be YYYY-MM-DD"),
+  until: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "until must be YYYY-MM-DD"),
+}).refine((input) => input.since <= input.until, {
+  message: "since must be earlier than or equal to until",
+  path: ["until"],
 });
 
 export type ImportTwelveDataRequest = z.infer<
@@ -112,10 +114,9 @@ export const ImportTwelveDataResponseSchema = z.object({
   success: z.literal(true),
   data: z.object({
     symbol: SupportedSymbolSchema,
-    date: z.string(),
-    importedCount: z.number().int().nonnegative(),
     since: z.string(),
     until: z.string(),
+    importedCount: z.number().int().nonnegative(),
   }),
 });
 
