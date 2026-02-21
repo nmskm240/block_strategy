@@ -22,16 +22,24 @@ export class ApiClient {
   }
 
   async post<TBody>(path: string, body: TBody): Promise<unknown> {
+    return this.request(path, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  }
+
+  async get(path: string): Promise<unknown> {
+    return this.request(path, { method: "GET" });
+  }
+
+  private async request(path: string, init: RequestInit): Promise<unknown> {
     const requestUrl = `${this.baseUrl}${path}`;
     let response: Response;
     try {
-      response = await fetch(requestUrl, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
+      response = await fetch(requestUrl, init);
     } catch (error) {
       throw new ApiClientError(
         `Cannot connect to API server at ${requestUrl}. Is the server running?`,

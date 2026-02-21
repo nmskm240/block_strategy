@@ -1,6 +1,6 @@
 import * as z from "zod";
 import { Graph } from "./graph";
-import { Timeframe, TradeSchema } from "./trade";
+import { OHLCVSchema, Timeframe, TradeSchema } from "./trade";
 
 export const DateRangeSchema = z
   .object({
@@ -71,3 +71,27 @@ export const SeedOhlcvResponseSchema = z.object({
 });
 
 export type SeedOhlcvResponse = z.infer<typeof SeedOhlcvResponseSchema>;
+
+export const OhlcvFileListResponseSchema = z.object({
+  message: z.string(),
+  success: z.literal(true),
+  data: z.object({
+    files: z.array(z.string()),
+  }),
+});
+
+export type OhlcvFileListResponse = z.infer<typeof OhlcvFileListResponseSchema>;
+
+export const OhlcvFileContentResponseSchema = z.object({
+  message: z.string(),
+  success: z.literal(true),
+  data: z.object({
+    key: z.string(),
+    count: z.number().int().nonnegative(),
+    ohlcvs: z.array(OHLCVSchema),
+  }),
+});
+
+export type OhlcvFileContentResponse = z.infer<
+  typeof OhlcvFileContentResponseSchema
+>;

@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import type { CSSProperties } from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminApiClient } from "@/services/adminClient";
+import { OhlcvLightweightChart } from "@/components/OhlcvLightweightChart";
+import type { OHLCV } from "shared";
 
 const cardStyle: CSSProperties = {
   background: "rgba(255, 255, 255, 0.04)",
@@ -11,20 +13,28 @@ const cardStyle: CSSProperties = {
 };
 
 export function AdminPage() {
+  const api = useMemo(() => new AdminApiClient(), []);
   const [seedLoading, setSeedLoading] = useState(false);
   const [seedResult, setSeedResult] = useState<string | null>(null);
   const [seedError, setSeedError] = useState<string | null>(null);
+  const [files, setFiles] = useState<string[]>([]);
+  const [filesLoading, setFilesLoading] = useState(false);
+  const [filesError, setFilesError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<string>("");
+  const [rows, setRows] = useState<OHLCV[]>([]);
+  const [contentLoading, setContentLoading] = useState(false);
+  const [contentError, setContentError] = useState<string | null>(null);
 
   async function onSeedClick() {
     setSeedLoading(true);
     setSeedError(null);
     setSeedResult(null);
     try {
-      const api = new AdminApiClient();
       const result = await api.seedOhlcv({ symbol: "NASDAQ:AAPL", days: 14 });
       setSeedResult(
         `${result.symbol}: ${result.insertedCount}件を投入 (${result.since} - ${result.until})`,
       );
+      await refreshFiles();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       setSeedError(message);
@@ -32,6 +42,46 @@ export function AdminPage() {
       setSeedLoading(false);
     }
   }
+
+  async function refreshFiles() {
+    setFilesLoading(true);
+    setFilesError(null);
+    try {
+      const nextFiles = await api.listOhlcvFiles();
+      setFiles(nextFiles);
+      if (nextFiles.length > 0) {
+        setSelectedFile((current) =>
+          current && nextFiles.includes(current) ? current : nextFiles[0] ?? "",
+        );
+      } else {
+        setSelectedFile("");
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setFilesError(message);
+    } finally {
+      setFilesLoading(false);
+    }
+  }
+
+  async function loadSelectedFile() {
+    if (!selectedFile) return;
+    setContentLoading(true);
+    setContentError(null);
+    try {
+      const content = await api.getOhlcvFileContent(selectedFile);
+      setRows(content.ohlcvs);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setContentError(message);
+    } finally {
+      setContentLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void refreshFiles();
+  }, []);
 
   return (
     <div
@@ -115,12 +165,85 @@ export function AdminPage() {
           </article>
 
           <article style={cardStyle}>
-            <h2 style={{ margin: 0, fontSize: 16 }}>Storage Status</h2>
+            <h2 style={{ margin: 0, fontSize: 16 }}>Storage Browser</h2>
             <p style={{ opacity: 0.8, margin: "8px 0 12px" }}>
-              R2バケット利用状況の表示領域です。
+              バケット内ファイルを選んでOHLCVを表示できます。
             </p>
-            <div style={{ fontSize: 13, opacity: 0.7 }}>bucket: `OHLCV_BUCKET`</div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <select
+                value={selectedFile}
+                onChange={(event) => setSelectedFile(event.target.value)}
+                style={{
+                  flex: 1,
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  background: "rgba(0,0,0,0.35)",
+                  color: "#f5f7fb",
+                  border: "1px solid rgba(255,255,255,0.18)",
+                }}
+              >
+                {files.length === 0 && <option value="">ファイルなし</option>}
+                {files.map((file) => (
+                  <option key={file} value={file}>
+                    {file}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={refreshFiles}
+                disabled={filesLoading}
+                style={{
+                  background: "#1f3552",
+                  color: "#fff",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  cursor: filesLoading ? "not-allowed" : "pointer",
+                }}
+              >
+                更新
+              </button>
+              <button
+                type="button"
+                onClick={loadSelectedFile}
+                disabled={!selectedFile || contentLoading}
+                style={{
+                  background: "#2f78ff",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  cursor:
+                    !selectedFile || contentLoading ? "not-allowed" : "pointer",
+                  opacity: !selectedFile || contentLoading ? 0.7 : 1,
+                }}
+              >
+                {contentLoading ? "読込中..." : "表示"}
+              </button>
+            </div>
+            <div style={{ fontSize: 13, opacity: 0.7, marginTop: 10 }}>
+              bucket: `OHLCV_BUCKET`
+            </div>
+            {filesError && (
+              <p style={{ marginTop: 10, color: "#ffb6b6", fontSize: 13 }}>
+                {filesError}
+              </p>
+            )}
+            {contentError && (
+              <p style={{ marginTop: 10, color: "#ffb6b6", fontSize: 13 }}>
+                {contentError}
+              </p>
+            )}
           </article>
+        </section>
+
+        <section style={{ ...cardStyle, marginTop: 12 }}>
+          <h2 style={{ margin: 0, fontSize: 16 }}>OHLCV Chart</h2>
+          <p style={{ opacity: 0.8, margin: "8px 0 12px" }}>
+            選択中ファイル: {selectedFile || "なし"} / データ件数: {rows.length}
+          </p>
+          <OhlcvLightweightChart rows={rows} />
         </section>
       </main>
     </div>

@@ -1,13 +1,15 @@
 import * as z from "zod";
 
-export type OHLCV = {
-  timestamp: number;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-};
+export const OHLCVSchema = z.object({
+  timestamp: z.number(),
+  open: z.number(),
+  high: z.number(),
+  low: z.number(),
+  close: z.number(),
+  volume: z.number(),
+});
+
+export type OHLCV = z.infer<typeof OHLCVSchema>;
 
 export const OhlcvKind = z.enum(["OPEN", "HIHG", "LOW", "CLOSE", "VOLUME"]);
 
