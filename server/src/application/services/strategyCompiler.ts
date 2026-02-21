@@ -179,9 +179,52 @@ function compileIndicatorNode(
       const typed = IndicatorRegistry.sma.parse(spec);
       outputs.set("value", source.sma(typed.params.period) as AnySeries);
     })
+    .with("ema", () => {
+      const typed = IndicatorRegistry.ema.parse(spec);
+      outputs.set("value", source.ema(typed.params.period) as AnySeries);
+    })
     .with("rsi", () => {
       const typed = IndicatorRegistry.rsi.parse(spec);
       outputs.set("value", source.rsi(typed.params.period) as AnySeries);
+    })
+    .with("momentum", () => {
+      const typed = IndicatorRegistry.momentum.parse(spec);
+      outputs.set("value", source.momentum(typed.params.period) as AnySeries);
+    })
+    .with("roc", () => {
+      const typed = IndicatorRegistry.roc.parse(spec);
+      outputs.set("value", source.roc(typed.params.period) as AnySeries);
+    })
+    .with("direction", () => {
+      const typed = IndicatorRegistry.direction.parse(spec);
+      outputs.set("value", source.direction(typed.params.period) as AnySeries);
+    })
+    .with("extrema", () => {
+      outputs.set("value", source.extrema() as AnySeries);
+    })
+    .with("trends", () => {
+      outputs.set("value", source.trends() as AnySeries);
+    })
+    .with("daysRising", () => {
+      outputs.set("value", source.daysRising() as AnySeries);
+    })
+    .with("daysFalling", () => {
+      outputs.set("value", source.daysFalling() as AnySeries);
+    })
+    .with("streaks", () => {
+      const typed = IndicatorRegistry.streaks.parse(spec);
+      outputs.set("value", source.streaks(typed.params.period) as AnySeries);
+    })
+    .with("crsi", () => {
+      const typed = IndicatorRegistry.crsi.parse(spec);
+      outputs.set(
+        "value",
+        source.crsi(
+          typed.params.rsiPeriod,
+          typed.params.streakRsiPeriod,
+          typed.params.percentRankPeriod,
+        ) as AnySeries,
+      );
     })
     .with("bband", () => {
       const typed = IndicatorRegistry.bband.parse(spec);
@@ -190,6 +233,31 @@ function compileIndicatorNode(
       outputs.set("upperBand", bands.getSeries("upper") as AnySeries);
       outputs.set("middleBand", bands.getSeries("middle") as AnySeries);
       outputs.set("lowerBand", bands.getSeries("lower") as AnySeries);
+    })
+    .with("bbandPercentB", () => {
+      const typed = IndicatorRegistry.bbandPercentB.parse(spec);
+      const stdDev = typed.params.stdDev;
+      const bands = source.bollinger(typed.params.period, stdDev, stdDev);
+      outputs.set("value", bands.percentB() as AnySeries);
+    })
+    .with("bbandBandwidth", () => {
+      const typed = IndicatorRegistry.bbandBandwidth.parse(spec);
+      const stdDev = typed.params.stdDev;
+      const bands = source.bollinger(typed.params.period, stdDev, stdDev);
+      outputs.set("value", bands.bandwidth() as AnySeries);
+    })
+    .with("macd", () => {
+      const typed = IndicatorRegistry.macd.parse(spec);
+      const macd = source.macd(
+        typed.params.shortPeriod,
+        typed.params.longPeriod,
+        typed.params.signalPeriod,
+      );
+      outputs.set("shortEMA", macd.getSeries("shortEMA") as AnySeries);
+      outputs.set("longEMA", macd.getSeries("longEMA") as AnySeries);
+      outputs.set("macd", macd.getSeries("macd") as AnySeries);
+      outputs.set("signal", macd.getSeries("signal") as AnySeries);
+      outputs.set("histogram", macd.getSeries("histogram") as AnySeries);
     })
     .exhaustive();
 }

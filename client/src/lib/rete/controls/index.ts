@@ -1,5 +1,9 @@
 export { SelectControl, SelectControlComponent } from "./SelectControl";
 export {
+  LabeledInputControl,
+  LabeledInputControlComponent,
+} from "./LabeledInputControl";
+export {
   getNumberControlValue,
   getSelectControlValue,
   getTextControlValue,

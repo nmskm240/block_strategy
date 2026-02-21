@@ -6,11 +6,11 @@ import {
   type IndicatorKind,
   IndicatorRegistry,
   NodeKind,
-  SUPPORTED_SYMBOLS,
 } from "shared";
 
 import {
   CustomControls,
+  LabeledInputControl,
   SelectControl,
   getNumberControlValue,
   getSelectControlValue,
@@ -50,7 +50,7 @@ export class ActionNode extends NodeBase {
     );
     this.addControl(
       "size",
-      new ClassicPreset.InputControl("number", { initial: 1 }),
+      new LabeledInputControl("number", { label: "size", initial: 1 }),
     );
   }
 
@@ -89,7 +89,8 @@ export class IndicatorNode extends NodeBase {
     for (const key of Object.keys(spec.shape.params.shape)) {
       this.addControl(
         key,
-        new ClassicPreset.InputControl("number", {
+        new LabeledInputControl("number", {
+          label: key,
           initial: getIndicatorParamDefault(this.kind, key),
         }),
       );
@@ -142,13 +143,13 @@ export class LogicalNode extends NodeBase {
 
     const leftInput = new ClassicPreset.Input(socket, "left");
     leftInput.addControl(
-      new ClassicPreset.InputControl("number", { initial: 0 }),
+      new LabeledInputControl("number", { label: "left", initial: 0 }),
     );
     this.addInput("left", leftInput);
 
     const rightInput = new ClassicPreset.Input(socket, "right");
     rightInput.addControl(
-      new ClassicPreset.InputControl("number", { initial: 0 }),
+      new LabeledInputControl("number", { label: "right", initial: 0 }),
     );
     this.addInput("right", rightInput);
 
@@ -194,31 +195,6 @@ export class OHLCVNode extends NodeBase {
         initial: "CLOSE",
       }),
     );
-    this.addControl(
-      "symbol",
-      new SelectControl({
-        options: SUPPORTED_SYMBOLS.map((symbol) => ({
-          label: symbol,
-          value: symbol,
-        })),
-        initial: "AAPL",
-      }),
-    );
-    this.addControl(
-      "timeframe",
-      new SelectControl({
-        options: [
-          { label: "1m", value: "1m" },
-          { label: "5m", value: "5m" },
-          { label: "15m", value: "15m" },
-          { label: "30m", value: "30m" },
-          { label: "1h", value: "1h" },
-          { label: "4h", value: "4h" },
-          { label: "1d", value: "1d" },
-        ],
-        initial: "1h",
-      }),
-    );
   }
 
   toGraphNode(): GraphNode {
@@ -228,8 +204,6 @@ export class OHLCVNode extends NodeBase {
         kind: NodeKind.OHLCV,
         params: {
           kind: getSelectControlValue(this.controls.kind, "CLOSE"),
-          symbol: getSelectControlValue(this.controls.symbol, "AAPL"),
-          timeframe: getSelectControlValue(this.controls.timeframe, "1h"),
         },
       },
     };

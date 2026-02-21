@@ -28,10 +28,134 @@ const SmaSchema = defineIndicatorNodeSchema(
   },
 );
 
+const EmaSchema = defineIndicatorNodeSchema(
+  "ema",
+  {
+    period: z.number().int().min(1).default(20),
+  },
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
 const RsiSchema = defineIndicatorNodeSchema(
   "rsi",
   {
     period: z.number().int().min(1).default(20),
+  },
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
+const MomentumSchema = defineIndicatorNodeSchema(
+  "momentum",
+  {
+    period: z.number().int().min(1).default(10),
+  },
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
+const RocSchema = defineIndicatorNodeSchema(
+  "roc",
+  {
+    period: z.number().int().min(1).default(10),
+  },
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
+const DirectionSchema = defineIndicatorNodeSchema(
+  "direction",
+  {
+    period: z.number().int().min(1).default(10),
+  },
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
+const ExtremaSchema = defineIndicatorNodeSchema(
+  "extrema",
+  {},
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
+const TrendsSchema = defineIndicatorNodeSchema(
+  "trends",
+  {},
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
+const DaysRisingSchema = defineIndicatorNodeSchema(
+  "daysRising",
+  {},
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
+const DaysFallingSchema = defineIndicatorNodeSchema(
+  "daysFalling",
+  {},
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
+const StreaksSchema = defineIndicatorNodeSchema(
+  "streaks",
+  {
+    period: z.number().int().min(1).default(3),
+  },
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
+const ConnersRsiSchema = defineIndicatorNodeSchema(
+  "crsi",
+  {
+    rsiPeriod: z.number().int().min(1).default(3),
+    streakRsiPeriod: z.number().int().min(1).default(2),
+    percentRankPeriod: z.number().int().min(1).default(100),
   },
   {
     source: z.number(),
@@ -57,10 +181,70 @@ const BBandSchema = defineIndicatorNodeSchema(
   },
 );
 
+const BBandPercentBSchema = defineIndicatorNodeSchema(
+  "bbandPercentB",
+  {
+    period: z.number().int().min(1).default(20),
+    stdDev: z.number().positive().default(2),
+  },
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
+const BBandBandwidthSchema = defineIndicatorNodeSchema(
+  "bbandBandwidth",
+  {
+    period: z.number().int().min(1).default(20),
+    stdDev: z.number().positive().default(2),
+  },
+  {
+    source: z.number(),
+  },
+  {
+    value: z.number(),
+  },
+);
+
+const MacdSchema = defineIndicatorNodeSchema(
+  "macd",
+  {
+    shortPeriod: z.number().int().min(1).default(12),
+    longPeriod: z.number().int().min(1).default(26),
+    signalPeriod: z.number().int().min(1).default(9),
+  },
+  {
+    source: z.number(),
+  },
+  {
+    shortEMA: z.number(),
+    longEMA: z.number(),
+    macd: z.number(),
+    signal: z.number(),
+    histogram: z.number(),
+  },
+);
+
 export const IndicatorRegistry = {
   sma: SmaSchema,
+  ema: EmaSchema,
   rsi: RsiSchema,
+  momentum: MomentumSchema,
+  roc: RocSchema,
+  direction: DirectionSchema,
+  extrema: ExtremaSchema,
+  trends: TrendsSchema,
+  daysRising: DaysRisingSchema,
+  daysFalling: DaysFallingSchema,
+  streaks: StreaksSchema,
+  crsi: ConnersRsiSchema,
   bband: BBandSchema,
+  bbandPercentB: BBandPercentBSchema,
+  bbandBandwidth: BBandBandwidthSchema,
+  macd: MacdSchema,
 } as const;
 
 export type IndicatorKind = keyof typeof IndicatorRegistry;

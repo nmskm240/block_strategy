@@ -7,7 +7,12 @@ import {
 } from "rete-connection-plugin";
 import { Presets, ReactPlugin } from "rete-react-plugin";
 import { contextMenu } from "./context";
-import { SelectControl, SelectControlComponent } from "./controls";
+import {
+  LabeledInputControl,
+  LabeledInputControlComponent,
+  SelectControl,
+  SelectControlComponent,
+} from "./controls";
 import type { AreaExtra, Schemes } from "./types";
 import type { Graph } from "shared";
 
@@ -32,6 +37,9 @@ export async function createEditor(container: HTMLElement) {
         control(data) {
           if (data.payload instanceof SelectControl) {
             return SelectControlComponent;
+          }
+          if (data.payload instanceof LabeledInputControl) {
+            return LabeledInputControlComponent;
           }
           if (data.payload instanceof ClassicPreset.InputControl) {
             return Presets.classic.Control;
