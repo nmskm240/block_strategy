@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useBacktestApiClient } from "@/contexts/apiClientContext";
 import type { EditorHandle } from "@/lib/rete";
-import type { BacktestResult } from "@/types";
+import type { BacktestRunSuccessPayload } from "@/types";
 import type { SupportedSymbol } from "shared";
 
 type UseBacktestRunnerArgs = {
   editorHandle: EditorHandle | null;
-  onSuccess: (result: BacktestResult) => void;
+  onSuccess: (payload: BacktestRunSuccessPayload) => void;
   onError: (message: string) => void;
 };
 
@@ -40,7 +40,7 @@ export function useBacktestRunner({
           cash: 10000,
         },
       });
-      onSuccess(result);
+      onSuccess({ result, symbol, since, until });
     } catch (error) {
       console.error(error);
       const message =

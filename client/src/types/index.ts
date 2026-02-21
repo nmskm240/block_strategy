@@ -9,3 +9,19 @@ export type BacktestResult = {
   pnl: number;
   lastPrice: number;
 };
+
+export type BacktestHistoryItem = {
+  id: string;
+  symbol: string;
+  ranAt: string;
+  since: string;
+  until: string;
+  result: BacktestResult;
+};
+
+export type BacktestRunSuccessPayload = {
+  result: BacktestResult;
+  symbol: string;
+  since: Date;
+  until: Date;
+};

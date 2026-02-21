@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { DateRangePicker } from "@/components/DateRangePicker";
 import type { EditorHandle } from "@/lib/rete";
 import { useBacktestRunner } from "@/hooks/useBacktestRunner";
-import type { BacktestResult } from "@/types";
+import type { BacktestRunSuccessPayload } from "@/types";
 import {
   SUPPORTED_SYMBOLS,
   type DateRange,
@@ -15,7 +15,7 @@ type BacktestRunButtonProps = {
   symbol: SupportedSymbol;
   onSymbolChange: (value: SupportedSymbol) => void;
   editorHandle: EditorHandle | null;
-  onSuccess: (result: BacktestResult) => void;
+  onSuccess: (payload: BacktestRunSuccessPayload) => void;
   onError: (message: string) => void;
 };
 
