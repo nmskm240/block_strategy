@@ -15,4 +15,6 @@ export type R2BucketLike = {
 export type WorkerBindings = {
   OHLCV_BUCKET?: R2BucketLike;
   OHLCV_OBJECT_PREFIX?: string;
+  TWELVE_DATA_API_KEY?: string;
+  TWELVE_DATA_BASE_URL?: string;
 };

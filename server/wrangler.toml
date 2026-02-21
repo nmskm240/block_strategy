@@ -9,6 +9,7 @@ port = 3000
 
 [vars]
 OHLCV_OBJECT_PREFIX = "ohlcv/"
+TWELVE_DATA_BASE_URL = "https://api.twelvedata.com"
 
 [[r2_buckets]]
 binding = "OHLCV_BUCKET"

@@ -95,3 +95,30 @@ export const OhlcvFileContentResponseSchema = z.object({
 export type OhlcvFileContentResponse = z.infer<
   typeof OhlcvFileContentResponseSchema
 >;
+
+export const ImportTwelveDataRequestSchema = z.object({
+  symbol: z.string().trim().min(1),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "date must be in YYYY-MM-DD format"),
+});
+
+export type ImportTwelveDataRequest = z.infer<
+  typeof ImportTwelveDataRequestSchema
+>;
+
+export const ImportTwelveDataResponseSchema = z.object({
+  message: z.string(),
+  success: z.literal(true),
+  data: z.object({
+    symbol: z.string(),
+    date: z.string(),
+    importedCount: z.number().int().nonnegative(),
+    since: z.string(),
+    until: z.string(),
+  }),
+});
+
+export type ImportTwelveDataResponse = z.infer<
+  typeof ImportTwelveDataResponseSchema
+>;

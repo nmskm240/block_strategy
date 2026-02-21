@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { useBacktestApiClient } from "@/contexts/apiClientContext";
 import type { EditorHandle } from "@/lib/rete";
-import { BacktestApiClient } from "@/services/backtestClient";
 import type { BacktestResult } from "@/types";
 
 type UseBacktestRunnerArgs = {
@@ -17,7 +17,7 @@ export function useBacktestRunner({
   onError,
 }: UseBacktestRunnerArgs) {
   const [isRunning, setIsRunning] = useState(false);
-  const backtestClient = useMemo(() => new BacktestApiClient(), []);
+  const backtestClient = useBacktestApiClient();
 
   async function runBacktest() {
     if (!editorHandle || isRunning) return;

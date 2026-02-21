@@ -29,6 +29,12 @@ bunx wrangler r2 bucket create block-strategy-ohlcv-preview
 `wrangler.toml` already contains:
 - `[[r2_buckets]]` binding: `OHLCV_BUCKET`
 - `[vars] OHLCV_OBJECT_PREFIX = "ohlcv/"`
+- `[vars] TWELVE_DATA_BASE_URL = "https://api.twelvedata.com"`
+
+Set TwelveData API key:
+```sh
+bunx wrangler secret put TWELVE_DATA_API_KEY
+```
 
 When `OHLCV_BUCKET` is available, server DI uses `R2CsvOhlcvRepository`.
 If the binding is missing, it falls back to `DummyOhlcvRepository`.

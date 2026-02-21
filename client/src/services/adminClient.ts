@@ -1,9 +1,12 @@
 import { ApiClient } from "@/services/apiClient";
 import {
+  ImportTwelveDataRequestSchema,
+  ImportTwelveDataResponseSchema,
   OhlcvFileContentResponseSchema,
   OhlcvFileListResponseSchema,
   SeedOhlcvRequestSchema,
   SeedOhlcvResponseSchema,
+  type ImportTwelveDataResponse,
   type OhlcvFileContentResponse,
   type OhlcvFileListResponse,
   type SeedOhlcvResponse,
@@ -12,6 +15,11 @@ import {
 export type SeedOhlcvInput = {
   symbol?: string;
   days?: number;
+};
+
+export type ImportTwelveDataInput = {
+  symbol: string;
+  date: string;
 };
 
 export class AdminApiClient {
@@ -46,6 +54,18 @@ export class AdminApiClient {
     const parsed = OhlcvFileContentResponseSchema.safeParse(response);
     if (!parsed.success) {
       throw new Error("Invalid response payload from admin file API");
+    }
+    return parsed.data.data;
+  }
+
+  async importFromTwelveData(
+    input: ImportTwelveDataInput,
+  ): Promise<ImportTwelveDataResponse["data"]> {
+    const payload = ImportTwelveDataRequestSchema.parse(input);
+    const response = await this.api.post("/admin/import-twelvedata", payload);
+    const parsed = ImportTwelveDataResponseSchema.safeParse(response);
+    if (!parsed.success) {
+      throw new Error("Invalid response payload from TwelveData import API");
     }
     return parsed.data.data;
   }
