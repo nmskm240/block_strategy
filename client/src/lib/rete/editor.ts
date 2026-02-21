@@ -6,6 +6,9 @@ import {
   Presets as ConnectionPresets,
 } from "rete-connection-plugin";
 import { Presets, ReactPlugin } from "rete-react-plugin";
+import type { Graph } from "shared";
+import "./styles/area.css";
+import { Connection } from "./connection";
 import { contextMenu } from "./context";
 import {
   LabeledInputControl,
@@ -13,7 +16,7 @@ import {
   SelectControl,
   SelectControlComponent,
 } from "./controls";
-import { Connection } from "./connection";
+import { ThemedNodeComponent } from "./customization";
 import {
   ActionNode,
   IndicatorNode,
@@ -23,7 +26,6 @@ import {
 } from "./nodes";
 import { ConditionOperators } from "./types";
 import type { AreaExtra, Schemes } from "./types";
-import type { Graph } from "shared";
 
 export type EditorHandle = {
   destroy: () => void;
@@ -31,6 +33,12 @@ export type EditorHandle = {
 };
 
 export async function createEditor(container: HTMLElement) {
+  container.classList.add("rete-editor-area");
+  const blockDoubleClickZoom = (event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  container.addEventListener("dblclick", blockDoubleClickZoom, true);
   const editor = new NodeEditor<Schemes>();
   const area = new AreaPlugin<Schemes, AreaExtra>(container);
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
@@ -43,15 +51,24 @@ export async function createEditor(container: HTMLElement) {
   render.addPreset(
     Presets.classic.setup({
       customize: {
+        node() {
+          return ThemedNodeComponent;
+        },
+        // socket() {
+        //   return ThemedSocketComponent;
+        // },
         control(data) {
           if (data.payload instanceof SelectControl) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return SelectControlComponent;
           }
           if (data.payload instanceof LabeledInputControl) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return LabeledInputControlComponent;
           }
           if (data.payload instanceof ClassicPreset.InputControl) {
-            return Presets.classic.Control;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            return Presets.classic.Control as any;
           }
           return null;
         },
@@ -72,6 +89,8 @@ export async function createEditor(container: HTMLElement) {
 
   const handle: EditorHandle = {
     destroy: () => {
+      container.removeEventListener("dblclick", blockDoubleClickZoom, true);
+      container.classList.remove("rete-editor-area");
       area.destroy();
     },
     getGraph: () => {
@@ -152,7 +171,9 @@ async function setupDefaultStrategy(
     asSchemeConnection(new Connection(sma50, "value", goldenCross, "right")),
   );
   await editor.addConnection(
-    asSchemeConnection(new Connection(goldenCross, "true", longEntry, "trigger")),
+    asSchemeConnection(
+      new Connection(goldenCross, "true", longEntry, "trigger"),
+    ),
   );
   await editor.addConnection(
     asSchemeConnection(new Connection(sma20, "value", deadCross, "left")),
@@ -161,7 +182,9 @@ async function setupDefaultStrategy(
     asSchemeConnection(new Connection(sma50, "value", deadCross, "right")),
   );
   await editor.addConnection(
-    asSchemeConnection(new Connection(deadCross, "true", shortEntry, "trigger")),
+    asSchemeConnection(
+      new Connection(deadCross, "true", shortEntry, "trigger"),
+    ),
   );
 
   await AreaExtensions.zoomAt(

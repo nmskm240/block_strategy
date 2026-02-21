@@ -1,0 +1,154 @@
+.rete-themed-node {
+  line-height: 1;
+}
+
+.rete-themed-node [data-testid="node"] {
+  width: 190px !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+  padding-bottom: 8px !important;
+}
+
+.rete-themed-node .title {
+  color: #eef5ff !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.25px !important;
+  line-height: 1.2 !important;
+  padding: 8px 10px !important;
+  text-align: center !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.rete-themed-node .input-title,
+.rete-themed-node .output-title {
+  color: rgba(233, 241, 250, 0.92) !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  margin: 6px !important;
+}
+
+.rete-themed-node .input {
+  display: flex;
+  align-items: center;
+}
+
+.rete-themed-node .output {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.rete-themed-node .control,
+.rete-themed-node .input-control {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+.rete-themed-node .control input,
+.rete-themed-node .control select,
+.rete-themed-node .input-control input,
+.rete-themed-node .input-control select {
+  border-radius: 999px !important;
+  border: 1px solid rgba(156, 214, 121, 0.72) !important;
+  background: rgba(48, 65, 52, 0.92) !important;
+  color: #f3fff0 !important;
+  font-size: 12px !important;
+  height: 24px;
+  line-height: 24px;
+}
+
+.rete-themed-node .input-socket,
+.rete-themed-node .output-socket {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.rete-themed-node.rete-node-ohlcv [data-testid="node"] {
+  background: linear-gradient(
+    180deg,
+    rgba(30, 42, 54, 0.9) 0%,
+    rgba(18, 24, 32, 0.82) 100%
+  ) !important;
+  border: 1px solid #4f667a !important;
+}
+
+.rete-themed-node.rete-node-ohlcv .title {
+  background: linear-gradient(
+    180deg,
+    rgba(199, 224, 255, 0.2) 0%,
+    rgba(120, 155, 189, 0.07) 100%
+  );
+}
+
+.rete-themed-node.rete-node-indicator [data-testid="node"] {
+  background: linear-gradient(
+    180deg,
+    rgba(34, 38, 47, 0.9) 0%,
+    rgba(21, 25, 35, 0.82) 100%
+  ) !important;
+  border: 1px solid #6f7787 !important;
+}
+
+.rete-themed-node.rete-node-indicator .title {
+  background: linear-gradient(
+    180deg,
+    rgba(224, 233, 255, 0.18) 0%,
+    rgba(153, 168, 201, 0.05) 100%
+  );
+}
+
+.rete-themed-node.rete-node-logical [data-testid="node"] {
+  background: linear-gradient(
+    180deg,
+    rgba(42, 37, 32, 0.9) 0%,
+    rgba(26, 22, 17, 0.82) 100%
+  ) !important;
+  border: 1px solid #8a7654 !important;
+}
+
+.rete-themed-node.rete-node-logical .title {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 230, 176, 0.22) 0%,
+    rgba(201, 161, 96, 0.07) 100%
+  );
+}
+
+.rete-themed-node.rete-node-action [data-testid="node"] {
+  background: linear-gradient(
+    180deg,
+    rgba(29, 42, 35, 0.9) 0%,
+    rgba(18, 27, 22, 0.82) 100%
+  ) !important;
+  border: 1px solid #4e8063 !important;
+}
+
+.rete-themed-node.rete-node-action .title {
+  background: linear-gradient(
+    180deg,
+    rgba(179, 250, 204, 0.22) 0%,
+    rgba(111, 182, 137, 0.07) 100%
+  );
+}
+
+.rete-themed-socket {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    #d8dde6 0%,
+    #a8b0bd 40%,
+    #717b8b 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.45),
+    0 0 12px rgba(255, 255, 255, 0.08);
+}
