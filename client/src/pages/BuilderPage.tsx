@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useRete } from "rete-react-plugin";
 import { BacktestRunButton } from "@/components/BacktestRunButton";
+import { BuilderTutorialTour } from "@/components/BuilderTutorialTour";
 import { PaperTradePanel } from "@/components/PaperTradePanel";
 import { TradingViewPanel } from "@/components/TradingViewPanel";
 import { createEditor } from "@/lib/rete";
@@ -12,6 +13,7 @@ import type { SupportedSymbol } from "shared";
 export function BuilderPage() {
   const [ref, editorHandle] = useRete<EditorHandle>(createEditor);
   const [symbol, setSymbol] = useState<SupportedSymbol>("AAPL");
+  const [isTutorialRunning, setIsTutorialRunning] = useState(false);
   const [panelWidth, setPanelWidth] = useState(500);
   const [chartHeight, setChartHeight] = useState(360);
   const [backtest, setBacktest] = useState<BacktestResult | null>(null);
@@ -31,6 +33,15 @@ export function BuilderPage() {
     startWidth: 0,
     startHeight: 0,
   });
+
+  useEffect(() => {
+    const storageKey = "builder-tutorial-seen-v1";
+    if (window.localStorage.getItem(storageKey) === "1") {
+      return;
+    }
+    window.localStorage.setItem(storageKey, "1");
+    setIsTutorialRunning(true);
+  }, []);
 
   useEffect(() => {
     function onMove(event: PointerEvent) {
@@ -102,11 +113,31 @@ export function BuilderPage() {
             Admin
           </Link>
         </div>
-        <div style={{ opacity: 0.7, fontSize: 12 }}>{symbol}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button
+            type="button"
+            onClick={() => setIsTutorialRunning(true)}
+            style={{
+              color: "#cde6ff",
+              background: "transparent",
+              border: "1px solid rgba(205, 230, 255, 0.45)",
+              borderRadius: 999,
+              padding: "4px 10px",
+              fontSize: 12,
+              cursor: "pointer",
+            }}
+          >
+            チュートリアル再生
+          </button>
+          <div style={{ opacity: 0.7, fontSize: 12 }}>{symbol}</div>
+        </div>
       </header>
 
       <div style={{ flex: 1, minHeight: 0, display: "flex", overflow: "hidden" }}>
-        <div style={{ flex: 1, minWidth: 0, position: "relative" }}>
+        <div
+          style={{ flex: 1, minWidth: 0, position: "relative" }}
+          data-tour="editor-canvas"
+        >
           <div ref={ref} style={{ height: "100%", width: "100%" }}></div>
           <BacktestRunButton
             symbol={symbol}
@@ -178,6 +209,10 @@ export function BuilderPage() {
           </div>
         </div>
       </div>
+      <BuilderTutorialTour
+        run={isTutorialRunning}
+        onStop={() => setIsTutorialRunning(false)}
+      />
     </div>
   );
 }

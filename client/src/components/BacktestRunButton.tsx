@@ -77,6 +77,7 @@ export function BacktestRunButton({
     <>
       <button
         type="button"
+        data-tour="backtest-run-button"
         aria-label={isRunning ? "Backtesting..." : "Run Backtest"}
         title={isRunning ? "Backtesting..." : "Run Backtest"}
         onClick={openModal}
