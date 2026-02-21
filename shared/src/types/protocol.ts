@@ -51,3 +51,23 @@ export const BacktestResponseSchema = z.object({
 });
 
 export type BacktestResponse = z.infer<typeof BacktestResponseSchema>;
+
+export const SeedOhlcvRequestSchema = z.object({
+  symbol: z.string().trim().min(1).default("NASDAQ:AAPL"),
+  days: z.number().int().min(1).max(365).default(7),
+});
+
+export type SeedOhlcvRequest = z.infer<typeof SeedOhlcvRequestSchema>;
+
+export const SeedOhlcvResponseSchema = z.object({
+  message: z.string(),
+  success: z.literal(true),
+  data: z.object({
+    symbol: z.string(),
+    insertedCount: z.number().int().nonnegative(),
+    since: z.string(),
+    until: z.string(),
+  }),
+});
+
+export type SeedOhlcvResponse = z.infer<typeof SeedOhlcvResponseSchema>;
