@@ -7,10 +7,11 @@ import { TradingViewPanel } from "@/components/TradingViewPanel";
 import { createEditor } from "@/lib/rete";
 import type { EditorHandle } from "@/lib/rete";
 import type { BacktestResult } from "@/types";
+import type { SupportedSymbol } from "shared";
 
 export function BuilderPage() {
   const [ref, editorHandle] = useRete<EditorHandle>(createEditor);
-  const [symbol, setSymbol] = useState("NASDAQ:AAPL");
+  const [symbol, setSymbol] = useState<SupportedSymbol>("AAPL");
   const [panelWidth, setPanelWidth] = useState(500);
   const [chartHeight, setChartHeight] = useState(360);
   const [backtest, setBacktest] = useState<BacktestResult | null>(null);

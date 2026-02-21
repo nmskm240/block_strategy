@@ -1,11 +1,16 @@
 import { Link } from "react-router-dom";
+import { useRef } from "react";
+import { DayPicker } from "react-day-picker";
 import { OhlcvLightweightChart } from "@/components/OhlcvLightweightChart";
 import { useOhlcvFileBrowser } from "@/hooks/useOhlcvFileBrowser";
 import { useSeedOhlcv } from "@/hooks/useSeedOhlcv";
 import { useTwelveDataImport } from "@/hooks/useTwelveDataImport";
+import { SUPPORTED_SYMBOLS } from "shared";
+import "react-day-picker/dist/style.css";
 import "@/styles/pages/adminPage.css";
 
 export function AdminPage() {
+  const datePickerDetailsRef = useRef<HTMLDetailsElement | null>(null);
   const {
     files,
     filesLoading,
@@ -30,6 +35,12 @@ export function AdminPage() {
     error: tdError,
     run: onImportTwelveDataClick,
   } = useTwelveDataImport({ onSuccess: refreshFiles });
+
+  const selectedDate = tdDate ? new Date(`${tdDate}T00:00:00`) : undefined;
+
+  function formatDate(value: Date): string {
+    return value.toISOString().slice(0, 10);
+  }
 
   return (
     <div className="admin-page">
@@ -64,18 +75,36 @@ export function AdminPage() {
             <h2 className="admin-card-title">TwelveData Import</h2>
             <p className="admin-card-note">銘柄名と日付を指定して TwelveData API からOHLCVを取込みます。</p>
             <div className="admin-form-grid">
-              <input
+              <select
                 value={tdSymbol}
-                onChange={(event) => setTdSymbol(event.target.value)}
-                placeholder="NASDAQ:AAPL"
+                onChange={(event) => setTdSymbol(event.target.value as (typeof SUPPORTED_SYMBOLS)[number])}
                 className="admin-field"
-              />
-              <input
-                type="date"
-                value={tdDate}
-                onChange={(event) => setTdDate(event.target.value)}
-                className="admin-field"
-              />
+              >
+                {SUPPORTED_SYMBOLS.map((symbol) => (
+                  <option key={symbol} value={symbol}>
+                    {symbol}
+                  </option>
+                ))}
+              </select>
+              <details ref={datePickerDetailsRef} className="admin-date-picker">
+                <summary className="admin-field admin-date-summary">{tdDate}</summary>
+                <div className="admin-date-popover">
+                  <DayPicker
+                    mode="single"
+                    selected={selectedDate}
+                    captionLayout="dropdown"
+                    fromYear={2000}
+                    toYear={new Date().getFullYear() + 1}
+                    onSelect={(date) => {
+                      if (!date) return;
+                      setTdDate(formatDate(date));
+                      if (datePickerDetailsRef.current) {
+                        datePickerDetailsRef.current.open = false;
+                      }
+                    }}
+                  />
+                </div>
+              </details>
             </div>
             <button
               type="button"

@@ -31,7 +31,17 @@ bunx wrangler r2 bucket create block-strategy-ohlcv-preview
 - `[vars] OHLCV_OBJECT_PREFIX = "ohlcv/"`
 - `[vars] TWELVE_DATA_BASE_URL = "https://api.twelvedata.com"`
 
-Set TwelveData API key:
+Set TwelveData API key for local dev:
+1. create `server/.env` (gitignored) with:
+```sh
+TWELVE_DATA_API_KEY=your_key
+```
+2. sync to Wrangler local vars file:
+```sh
+bun run sync:dev-vars
+```
+
+Production/staging key should still use Wrangler Secret:
 ```sh
 bunx wrangler secret put TWELVE_DATA_API_KEY
 ```

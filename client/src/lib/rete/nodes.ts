@@ -6,6 +6,7 @@ import {
   type IndicatorKind,
   IndicatorRegistry,
   NodeKind,
+  SUPPORTED_SYMBOLS,
 } from "shared";
 
 import {
@@ -13,7 +14,6 @@ import {
   SelectControl,
   getNumberControlValue,
   getSelectControlValue,
-  getTextControlValue,
 } from "./controls";
 import { socket } from "./sockets";
 import { ConditionOperators } from "./types";
@@ -196,8 +196,12 @@ export class OHLCVNode extends NodeBase {
     );
     this.addControl(
       "symbol",
-      new ClassicPreset.InputControl("text", {
-        initial: "NASDAQ:AAPL",
+      new SelectControl({
+        options: SUPPORTED_SYMBOLS.map((symbol) => ({
+          label: symbol,
+          value: symbol,
+        })),
+        initial: "AAPL",
       }),
     );
     this.addControl(
@@ -224,7 +228,7 @@ export class OHLCVNode extends NodeBase {
         kind: NodeKind.OHLCV,
         params: {
           kind: getSelectControlValue(this.controls.kind, "CLOSE"),
-          symbol: getTextControlValue(this.controls.symbol, "NASDAQ:AAPL"),
+          symbol: getSelectControlValue(this.controls.symbol, "AAPL"),
           timeframe: getSelectControlValue(this.controls.timeframe, "1h"),
         },
       },

@@ -8,6 +8,7 @@ import type {
   OhlcvFileContentResponse,
   OhlcvFileListResponse,
   SeedOhlcvResponse,
+  SupportedSymbol,
 } from "shared";
 import {
   HttpClient,
@@ -66,7 +67,7 @@ function toUtcWindow(date: string): { start: string; end: string } {
 }
 
 function parseTwelveDataRows(
-  symbol: string,
+  symbol: SupportedSymbol,
   payload: TwelveDataTimeSeriesResponse,
 ): OHLCV[] {
   if (payload.status === "error") {
@@ -104,7 +105,7 @@ export const adminRoute = new Hono<{ Variables: AdminRouteVariables }>()
     const window = toUtcWindow(request.date);
     const params = new URLSearchParams();
     params.set("symbol", request.symbol);
-    params.set("interval", "1h");
+    params.set("interval", "1min");
     params.set("start_date", window.start);
     params.set("end_date", window.end);
     params.set("timezone", "UTC");

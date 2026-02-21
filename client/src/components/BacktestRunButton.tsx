@@ -2,10 +2,11 @@ import { Play } from "lucide-react";
 import type { EditorHandle } from "@/lib/rete";
 import { useBacktestRunner } from "@/hooks/useBacktestRunner";
 import type { BacktestResult } from "@/types";
+import type { SupportedSymbol } from "shared";
 import "@/styles/components/backtestRunButton.css";
 
 type BacktestRunButtonProps = {
-  symbol: string;
+  symbol: SupportedSymbol;
   editorHandle: EditorHandle | null;
   onSuccess: (result: BacktestResult) => void;
   onError: (message: string) => void;

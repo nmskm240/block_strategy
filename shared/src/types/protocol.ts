@@ -1,6 +1,6 @@
 import * as z from "zod";
 import { Graph } from "./graph";
-import { OHLCVSchema, Timeframe, TradeSchema } from "./trade";
+import { OHLCVSchema, SupportedSymbolSchema, Timeframe, TradeSchema } from "./trade";
 
 export const DateRangeSchema = z
   .object({
@@ -15,7 +15,7 @@ export const DateRangeSchema = z
 export type DateRange = z.infer<typeof DateRangeSchema>;
 
 export const BacktestEnvironmentSchema = z.object({
-  symbol: z.string().trim().min(1, "symbol is required"),
+  symbol: SupportedSymbolSchema,
   timeframe: Timeframe.default("1h"),
   testRange: DateRangeSchema,
   cash: z.number().positive().default(10000),
@@ -53,7 +53,7 @@ export const BacktestResponseSchema = z.object({
 export type BacktestResponse = z.infer<typeof BacktestResponseSchema>;
 
 export const SeedOhlcvRequestSchema = z.object({
-  symbol: z.string().trim().min(1).default("NASDAQ:AAPL"),
+  symbol: SupportedSymbolSchema.default("AAPL"),
   days: z.number().int().min(1).max(365).default(7),
 });
 
@@ -63,7 +63,7 @@ export const SeedOhlcvResponseSchema = z.object({
   message: z.string(),
   success: z.literal(true),
   data: z.object({
-    symbol: z.string(),
+    symbol: SupportedSymbolSchema,
     insertedCount: z.number().int().nonnegative(),
     since: z.string(),
     until: z.string(),
@@ -97,7 +97,7 @@ export type OhlcvFileContentResponse = z.infer<
 >;
 
 export const ImportTwelveDataRequestSchema = z.object({
-  symbol: z.string().trim().min(1),
+  symbol: SupportedSymbolSchema,
   date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "date must be in YYYY-MM-DD format"),
@@ -111,7 +111,7 @@ export const ImportTwelveDataResponseSchema = z.object({
   message: z.string(),
   success: z.literal(true),
   data: z.object({
-    symbol: z.string(),
+    symbol: SupportedSymbolSchema,
     date: z.string(),
     importedCount: z.number().int().nonnegative(),
     since: z.string(),

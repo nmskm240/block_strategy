@@ -11,6 +11,18 @@ export const OHLCVSchema = z.object({
 
 export type OHLCV = z.infer<typeof OHLCVSchema>;
 
+export const SupportedSymbolSchema = z.enum([
+  "AAPL",
+  "MSFT",
+  "NVDA",
+  "AMZN",
+  "TSLA",
+]);
+
+export const SUPPORTED_SYMBOLS = SupportedSymbolSchema.options;
+
+export type SupportedSymbol = z.infer<typeof SupportedSymbolSchema>;
+
 export const OhlcvKind = z.enum(["OPEN", "HIHG", "LOW", "CLOSE", "VOLUME"]);
 
 export type OhlcvKind = z.infer<typeof OhlcvKind>;

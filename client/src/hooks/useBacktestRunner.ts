@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useBacktestApiClient } from "@/contexts/apiClientContext";
 import type { EditorHandle } from "@/lib/rete";
 import type { BacktestResult } from "@/types";
+import type { SupportedSymbol } from "shared";
 
 type UseBacktestRunnerArgs = {
-  symbol: string;
+  symbol: SupportedSymbol;
   editorHandle: EditorHandle | null;
   onSuccess: (result: BacktestResult) => void;
   onError: (message: string) => void;

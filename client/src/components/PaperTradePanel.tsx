@@ -1,8 +1,9 @@
 import type { BacktestResult } from "@/types";
+import { SUPPORTED_SYMBOLS, type SupportedSymbol } from "shared";
 
 type PaperTradePanelProps = {
-  symbol: string;
-  onSymbolChange: (value: string) => void;
+  symbol: SupportedSymbol;
+  onSymbolChange: (value: SupportedSymbol) => void;
   backtest: BacktestResult | null;
   backtestError: string | null;
 };
@@ -42,9 +43,11 @@ export function PaperTradePanel({
       >
         Backtest
         <span style={{ opacity: 0.6 }}>·</span>
-        <input
+        <select
           value={symbol}
-          onChange={(event) => onSymbolChange(event.target.value)}
+          onChange={(event) =>
+            onSymbolChange(event.target.value as SupportedSymbol)
+          }
           style={{
             background: "transparent",
             border: "1px solid rgba(255,255,255,0.2)",
@@ -52,10 +55,16 @@ export function PaperTradePanel({
             color: "#fff",
             fontSize: 12,
             padding: "2px 6px",
-            width: 140,
+            width: 180,
           }}
           onPointerDown={(event) => event.stopPropagation()}
-        />
+        >
+          {SUPPORTED_SYMBOLS.map((item) => (
+            <option key={item} value={item} style={{ color: "#111" }}>
+              {item}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div style={{ padding: 12, display: "grid", gap: 8 }}>

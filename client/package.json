@@ -17,6 +17,7 @@
     "lucide-react": "^0.507.0",
     "lightweight-charts": "^5.0.9",
     "react": "^19.2.3",
+    "react-day-picker": "^9.13.2",
     "react-dom": "^19.2.3",
     "react-router-dom": "^7.13.0",
     "rete": "^2.0.6",

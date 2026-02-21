@@ -10,15 +10,16 @@ import {
   type OhlcvFileContentResponse,
   type OhlcvFileListResponse,
   type SeedOhlcvResponse,
+  type SupportedSymbol,
 } from "shared";
 
 export type SeedOhlcvInput = {
-  symbol?: string;
+  symbol?: SupportedSymbol;
   days?: number;
 };
 
 export type ImportTwelveDataInput = {
-  symbol: string;
+  symbol: SupportedSymbol;
   date: string;
 };
 

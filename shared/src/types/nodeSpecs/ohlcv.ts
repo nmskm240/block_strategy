@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { SupportedSymbolSchema } from "../trade";
 import { NodeKind } from "./nodeKind";
 
 export const OhlcvNodeSpecSchema = z
@@ -7,7 +8,7 @@ export const OhlcvNodeSpecSchema = z
     params: z
       .object({
         kind: z.enum(["OPEN", "HIGH", "LOW", "CLOSE", "VOLUME"]),
-        symbol: z.string().nonempty(),
+        symbol: SupportedSymbolSchema,
         timeframe: z.enum(["1m", "5m", "15m", "30m", "1h", "4h", "1d"]),
       })
       .strict(),

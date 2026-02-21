@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAdminApiClient } from "@/contexts/apiClientContext";
+import type { SupportedSymbol } from "shared";
 
 type UseTwelveDataImportOptions = {
   onSuccess?: () => Promise<void> | void;
@@ -9,7 +10,7 @@ export function useTwelveDataImport(
   options: UseTwelveDataImportOptions = {},
 ) {
   const api = useAdminApiClient();
-  const [symbol, setSymbol] = useState("NASDAQ:AAPL");
+  const [symbol, setSymbol] = useState<SupportedSymbol>("AAPL");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);

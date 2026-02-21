@@ -26,11 +26,11 @@ describe("strategyCompiler.compileSignals", () => {
   it("logicalサブグラフのENTRY/EXITトリガーをシグナルへ反映できる", () => {
     const open = new OHLCVNode(StrategyGraphNodeId("open"), {
       kind: "ohlcv",
-      params: { kind: "OPEN", symbol: "TEST", timeframe: "1h" },
+      params: { kind: "OPEN", symbol: "AAPL", timeframe: "1h" },
     });
     const close = new OHLCVNode(StrategyGraphNodeId("close"), {
       kind: "ohlcv",
-      params: { kind: "CLOSE", symbol: "TEST", timeframe: "1h" },
+      params: { kind: "CLOSE", symbol: "AAPL", timeframe: "1h" },
     });
     const entryCond = new LogicalNode(StrategyGraphNodeId("entry-cond"), {
       kind: "logical",
@@ -104,11 +104,11 @@ describe("strategyCompiler.compileSignals", () => {
   it("同一バーで複数ENTRYが発火した場合はSHORTが優先される", () => {
     const open = new OHLCVNode(StrategyGraphNodeId("open"), {
       kind: "ohlcv",
-      params: { kind: "OPEN", symbol: "TEST", timeframe: "1h" },
+      params: { kind: "OPEN", symbol: "AAPL", timeframe: "1h" },
     });
     const close = new OHLCVNode(StrategyGraphNodeId("close"), {
       kind: "ohlcv",
-      params: { kind: "CLOSE", symbol: "TEST", timeframe: "1h" },
+      params: { kind: "CLOSE", symbol: "AAPL", timeframe: "1h" },
     });
     const longCond = new LogicalNode(StrategyGraphNodeId("long-cond"), {
       kind: "logical",
@@ -215,7 +215,7 @@ describe("strategyCompiler.compileSignals", () => {
   it("多層Indicator（sma→sma）を経由した条件でENTRYシグナルを生成できる", () => {
     const close = new OHLCVNode(StrategyGraphNodeId("close"), {
       kind: "ohlcv",
-      params: { kind: "CLOSE", symbol: "TEST", timeframe: "1h" },
+      params: { kind: "CLOSE", symbol: "AAPL", timeframe: "1h" },
     });
     const sma1 = new IndicatorNode(StrategyGraphNodeId("sma1"), {
       kind: "indicator",
@@ -308,7 +308,7 @@ describe("strategyCompiler.compileSignals", () => {
     ) => {
       const close = new OHLCVNode(StrategyGraphNodeId(`close-${rightPortName}`), {
         kind: "ohlcv",
-        params: { kind: "CLOSE", symbol: "TEST", timeframe: "1h" },
+        params: { kind: "CLOSE", symbol: "AAPL", timeframe: "1h" },
       });
       const bband = new IndicatorNode(StrategyGraphNodeId(`bband-${rightPortName}`), {
         kind: "indicator",

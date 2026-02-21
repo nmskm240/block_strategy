@@ -18,7 +18,7 @@ export function useSeedOhlcv(
     setError(null);
     setResult(null);
     try {
-      const seeded = await api.seedOhlcv({ symbol: "NASDAQ:AAPL", days: 14 });
+      const seeded = await api.seedOhlcv({ symbol: "AAPL", days: 14 });
       setResult(
         `${seeded.symbol}: ${seeded.insertedCount}件を投入 (${seeded.since} - ${seeded.until})`,
       );
