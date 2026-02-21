@@ -1,7 +1,8 @@
 {
-  "plantuml.render": "PlantUMLServer",
   "editor.tabSize": 2,
   "editor.codeActionsOnSave": {
     "source.organizeImports": "always"
-  }
+  },
+  "plantuml.render": "PlantUMLServer",
+  "plantuml.server": "https://www.plantuml.com/plantuml"
 }
