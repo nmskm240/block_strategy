@@ -13,6 +13,15 @@ import {
   SelectControl,
   SelectControlComponent,
 } from "./controls";
+import { Connection } from "./connection";
+import {
+  ActionNode,
+  IndicatorNode,
+  NodeBase,
+  LogicalNode,
+  OHLCVNode,
+} from "./nodes";
+import { ConditionOperators } from "./types";
 import type { AreaExtra, Schemes } from "./types";
 import type { Graph } from "shared";
 
@@ -59,6 +68,7 @@ export async function createEditor(container: HTMLElement) {
   area.use(contextMenu);
 
   AreaExtensions.simpleNodesOrder(area);
+  await setupDefaultStrategy(editor, area);
 
   const handle: EditorHandle = {
     destroy: () => {
@@ -85,4 +95,78 @@ export async function createEditor(container: HTMLElement) {
   };
 
   return handle;
+}
+
+async function setupDefaultStrategy(
+  editor: NodeEditor<Schemes>,
+  area: AreaPlugin<Schemes, AreaExtra>,
+) {
+  if (editor.getNodes().length > 0) {
+    return;
+  }
+
+  const close = new OHLCVNode();
+  const sma20 = new IndicatorNode("sma");
+  const sma50 = new IndicatorNode("sma");
+  const goldenCross = new LogicalNode(ConditionOperators.GREATER_THAN);
+  const deadCross = new LogicalNode(ConditionOperators.LESS_THAN);
+  const longEntry = new ActionNode();
+  const shortEntry = new ActionNode();
+
+  (close.controls.kind as SelectControl).setValue("CLOSE");
+  (sma20.controls.period as LabeledInputControl<"number">).setValue(20);
+  (sma50.controls.period as LabeledInputControl<"number">).setValue(50);
+
+  await editor.addNode(close);
+  await editor.addNode(sma20);
+  await editor.addNode(sma50);
+  await editor.addNode(goldenCross);
+  (shortEntry.controls.side as SelectControl).setValue("SELL");
+
+  await editor.addNode(longEntry);
+  await editor.addNode(deadCross);
+  await editor.addNode(shortEntry);
+
+  await area.translate(close.id, { x: 80, y: 180 });
+  await area.translate(sma20.id, { x: 300, y: 90 });
+  await area.translate(sma50.id, { x: 300, y: 280 });
+  await area.translate(goldenCross.id, { x: 560, y: 120 });
+  await area.translate(longEntry.id, { x: 800, y: 120 });
+  await area.translate(deadCross.id, { x: 560, y: 300 });
+  await area.translate(shortEntry.id, { x: 800, y: 300 });
+
+  const asSchemeConnection = <A extends NodeBase, B extends NodeBase>(
+    connection: Connection<A, B>,
+  ) => connection as unknown as Connection<NodeBase, NodeBase>;
+
+  await editor.addConnection(
+    asSchemeConnection(new Connection(close, "value", sma20, "source")),
+  );
+  await editor.addConnection(
+    asSchemeConnection(new Connection(close, "value", sma50, "source")),
+  );
+  await editor.addConnection(
+    asSchemeConnection(new Connection(sma20, "value", goldenCross, "left")),
+  );
+  await editor.addConnection(
+    asSchemeConnection(new Connection(sma50, "value", goldenCross, "right")),
+  );
+  await editor.addConnection(
+    asSchemeConnection(new Connection(goldenCross, "true", longEntry, "trigger")),
+  );
+  await editor.addConnection(
+    asSchemeConnection(new Connection(sma20, "value", deadCross, "left")),
+  );
+  await editor.addConnection(
+    asSchemeConnection(new Connection(sma50, "value", deadCross, "right")),
+  );
+  await editor.addConnection(
+    asSchemeConnection(new Connection(deadCross, "true", shortEntry, "trigger")),
+  );
+
+  await AreaExtensions.zoomAt(
+    area,
+    [close, sma20, sma50, goldenCross, longEntry, deadCross, shortEntry],
+    { scale: 0.9 },
+  );
 }
