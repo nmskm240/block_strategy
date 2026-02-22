@@ -268,24 +268,24 @@ function compileLogicalNode(
   context: CompileContext,
   outputs: NodeSeriesMap,
 ): void {
-  const leftEdge = context.incomingByTargetPort.get(
-    StrategyGraphNodePortKey({ nodeId, portName: "left" }),
-  );
-  const rightEdge = context.incomingByTargetPort.get(
-    StrategyGraphNodePortKey({ nodeId, portName: "right" }),
-  );
-  if (!leftEdge || !rightEdge) {
-    throw new Error(`Logical node '${nodeId}' is missing left/right inputs`);
-  }
+  const resolveInput = (
+    portName: "left" | "right",
+    fallbackValue: number,
+  ): number[] => {
+    const inputEdge = context.incomingByTargetPort.get(
+      StrategyGraphNodePortKey({ nodeId, portName }),
+    );
+    if (inputEdge) {
+      return asNumericSeries(
+        getNodePortSeries(inputEdge.from.nodeId, inputEdge.from.portName, context),
+        `Logical node '${nodeId}' ${portName} input`,
+      ).toArray();
+    }
+    return new Array(context.inputDf.count()).fill(fallbackValue);
+  };
 
-  const left = asNumericSeries(
-    getNodePortSeries(leftEdge.from.nodeId, leftEdge.from.portName, context),
-    `Logical node '${nodeId}' left input`,
-  ).toArray();
-  const right = asNumericSeries(
-    getNodePortSeries(rightEdge.from.nodeId, rightEdge.from.portName, context),
-    `Logical node '${nodeId}' right input`,
-  ).toArray();
+  const left = resolveInput("left", spec.inputs.left);
+  const right = resolveInput("right", spec.inputs.right);
 
   const out = left.map((leftValue, index) => {
     const rightValue = right[index];
