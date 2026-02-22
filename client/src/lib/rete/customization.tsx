@@ -6,6 +6,7 @@ import {
   IndicatorNode,
   LogicGateNode,
   LogicalNode,
+  MathNode,
   OHLCVNode,
 } from "./nodes";
 
@@ -17,6 +18,9 @@ function getNodeTypeClass(node: unknown): string {
     return "rete-node-indicator";
   }
   if (node instanceof LogicalNode) {
+    return "rete-node-logical";
+  }
+  if (node instanceof MathNode) {
     return "rete-node-logical";
   }
   if (node instanceof LogicGateNode) {

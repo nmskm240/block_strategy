@@ -6,6 +6,7 @@ import {
   getIndicatorParamDefault,
   type IndicatorKind,
   IndicatorRegistry,
+  type MathOperator,
   NodeKind,
 } from "shared";
 
@@ -18,7 +19,11 @@ import {
   getSelectControlValue,
 } from "./controls";
 import { socket } from "./sockets";
-import { ConditionOperators, LogicGateOperators } from "./types";
+import {
+  ConditionOperators,
+  LogicGateOperators,
+  MathOperators,
+} from "./types";
 
 export abstract class NodeBase extends ClassicPreset.Node<
   Record<string, ClassicPreset.Socket>,
@@ -145,13 +150,13 @@ export class LogicalNode extends NodeBase {
 
     const leftInput = new ClassicPreset.Input(socket, "left");
     leftInput.addControl(
-      new ClassicPreset.InputControl("number", { initial: 0 }),
+      new LabeledInputControl("number", { label: "Left", initial: 0 }),
     );
     this.addInput("left", leftInput);
 
     const rightInput = new ClassicPreset.Input(socket, "right");
     rightInput.addControl(
-      new ClassicPreset.InputControl("number", { initial: 0 }),
+      new LabeledInputControl("number", { label: "Right", initial: 0 }),
     );
     this.addInput("right", rightInput);
 
@@ -173,6 +178,49 @@ export class LogicalNode extends NodeBase {
         },
         outputs: {
           true: true,
+        },
+      },
+    };
+  }
+}
+
+export class MathNode extends NodeBase {
+  readonly operator: MathOperators;
+
+  constructor(operator: MathOperators) {
+    super(operator.toString());
+    this.operator = operator;
+
+    const leftInput = new ClassicPreset.Input(socket, "left");
+    leftInput.addControl(
+      new LabeledInputControl("number", { label: "Left", initial: 0 }),
+    );
+    this.addInput("left", leftInput);
+
+    const rightInput = new ClassicPreset.Input(socket, "right");
+    rightInput.addControl(
+      new LabeledInputControl("number", { label: "Right", initial: 0 }),
+    );
+    this.addInput("right", rightInput);
+
+    this.addOutput("value", new ClassicPreset.Output(socket, "value"));
+  }
+
+  toGraphNode(): GraphNode {
+    const left = getNumberControlValue(this.inputs.left?.control, 0);
+    const right = getNumberControlValue(this.inputs.right?.control, 0);
+
+    return {
+      id: String(this.id),
+      spec: {
+        kind: NodeKind.MATH,
+        operator: this.operator as MathOperator,
+        inputs: {
+          left,
+          right,
+        },
+        outputs: {
+          value: 0,
         },
       },
     };

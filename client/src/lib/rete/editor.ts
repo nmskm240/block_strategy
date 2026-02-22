@@ -23,6 +23,7 @@ import {
   ActionNode,
   IndicatorNode,
   LogicGateNode,
+  MathNode,
   NodeBase,
   LogicalNode,
   OHLCVNode,
@@ -116,6 +117,9 @@ export async function createEditor(container: HTMLElement) {
 
   AreaExtensions.showInputControl(area, ({ input, hasAnyConnection }) => {
     const isOperandInput = editor.getNodes().some((node) => {
+      if (node instanceof MathNode) {
+        return node.inputs.left === input || node.inputs.right === input;
+      }
       if (!(node instanceof LogicalNode)) {
         if (node instanceof LogicGateNode) {
           return node.hasInputPort(input);

@@ -8,9 +8,15 @@ import {
   IndicatorNode,
   LogicGateNode,
   LogicalNode,
+  MathNode,
   OHLCVNode,
 } from "./nodes";
-import { ConditionOperators, LogicGateOperators, Schemes } from "./types";
+import {
+  ConditionOperators,
+  LogicGateOperators,
+  MathOperators,
+  Schemes,
+} from "./types";
 
 export const contextMenu = new ContextMenuPlugin<Schemes>({
   items: ContextMenuPresets.classic.setup([
@@ -23,6 +29,13 @@ export const contextMenu = new ContextMenuPlugin<Schemes>({
       ]),
     ],
     ["Action", () => new ActionNode()],
+    [
+      "Math",
+      Object.values(MathOperators).map((operator) => [
+        operator,
+        () => new MathNode(operator),
+      ]),
+    ],
     [
       "Logical",
       Object.values(ConditionOperators).map((e) => [

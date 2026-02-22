@@ -3,11 +3,13 @@ import {
   BooleanLogicNodeSpecSchema,
   IndicatorNodeSpecSchema,
   LogicalNodeSpecSchema,
+  MathNodeSpecSchema,
   OhlcvNodeSpecSchema,
   type ActionNodeSpec,
   type BooleanLogicNodeSpec,
   type IndicatorNodeSpec,
   type LogicalNodeSpec,
+  type MathNodeSpec,
   type NodeSpec,
   type OhlcvNodeSpec,
   type GraphPort,
@@ -101,6 +103,28 @@ export class ActionNode implements StrategyGraphNode {
     const parsed = ActionNodeSpecSchema.safeParse(spec);
     if (!parsed.success) {
       throw new Error(`Invalid action node spec: ${parsed.error.message}`);
+    }
+
+    this.id = id;
+    this.spec = parsed.data;
+  }
+}
+
+export class MathNode implements StrategyGraphNode {
+  readonly id: StrategyGraphNodeId;
+  readonly spec: MathNodeSpec;
+  readonly inputPorts: readonly GraphPort[] = [
+    { name: "left", type: "NUMERIC" },
+    { name: "right", type: "NUMERIC" },
+  ];
+  readonly outputPorts: readonly GraphPort[] = [
+    { name: "value", type: "NUMERIC" },
+  ];
+
+  constructor(id: StrategyGraphNodeId, spec: MathNodeSpec) {
+    const parsed = MathNodeSpecSchema.safeParse(spec);
+    if (!parsed.success) {
+      throw new Error(`Invalid math node spec: ${parsed.error.message}`);
     }
 
     this.id = id;

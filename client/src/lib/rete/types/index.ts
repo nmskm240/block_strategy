@@ -24,3 +24,11 @@ export enum LogicGateOperators {
   OR = "OR",
   NOT = "NOT",
 }
+
+export enum MathOperators {
+  ADD = "+",
+  SUBTRACT = "-",
+  MULTIPLY = "*",
+  DIVIDE = "/",
+  MODULO = "%",
+}

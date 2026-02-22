@@ -3,6 +3,7 @@ import {
   StrategyGraphNodeId,
   OHLCVNode,
   IndicatorNode,
+  MathNode,
   ActionNode,
   LogicalNode,
   BooleanLogicNode,
@@ -27,6 +28,7 @@ function resolveNode(nodeData: GraphNode): StrategyGraphNode {
       { kind: NodeKind.INDICATOR },
       (spec) => new IndicatorNode(nodeId, spec),
     )
+    .with({ kind: NodeKind.MATH }, (spec) => new MathNode(nodeId, spec))
     .with({ kind: NodeKind.ACTION }, (spec) => new ActionNode(nodeId, spec))
     .with({ kind: NodeKind.LOGICAL }, (spec) => new LogicalNode(nodeId, spec))
     .with(

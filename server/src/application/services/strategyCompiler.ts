@@ -15,6 +15,7 @@ import {
   type IndicatorKind,
   type IndicatorNodeSpec,
   type LogicalNodeSpec,
+  type MathNodeSpec,
   type OHLCV,
   type OhlcvNodeSpec,
 } from "@shared/types";
@@ -126,6 +127,9 @@ export function compileNode(
     )
     .with({ kind: NodeKind.INDICATOR }, (spec) =>
       compileIndicatorNode(node.id, spec, context, outputs),
+    )
+    .with({ kind: NodeKind.MATH }, (spec) =>
+      compileMathNode(node.id, spec, context, outputs),
     )
     .with({ kind: NodeKind.LOGICAL }, (spec) =>
       compileLogicalNode(node.id, spec, context, outputs),
@@ -316,6 +320,63 @@ function compileLogicalNode(
     }
   });
   outputs.set("true", new Series(out) as AnySeries);
+}
+
+function compileMathNode(
+  nodeId: StrategyGraphNodeId,
+  spec: MathNodeSpec,
+  context: CompileContext,
+  outputs: NodeSeriesMap,
+): void {
+  const resolveInput = (
+    portName: "left" | "right",
+    fallbackValue: number,
+  ): number[] => {
+    const inputEdge = context.incomingByTargetPort.get(
+      StrategyGraphNodePortKey({ nodeId, portName }),
+    );
+    if (inputEdge) {
+      return asNumericSeries(
+        getNodePortSeries(inputEdge.from.nodeId, inputEdge.from.portName, context),
+        `Math node '${nodeId}' ${portName} input`,
+      ).toArray();
+    }
+    return new Array(context.inputDf.count()).fill(fallbackValue);
+  };
+
+  const left = resolveInput("left", spec.inputs.left);
+  const right = resolveInput("right", spec.inputs.right);
+  const out = left.map((leftValue, index) => {
+    const rightValue = right[index];
+    if (rightValue === undefined) {
+      return 0;
+    }
+
+    switch (spec.operator) {
+      case "+":
+        return leftValue + rightValue;
+      case "-":
+        return leftValue - rightValue;
+      case "*":
+        return leftValue * rightValue;
+      case "/":
+        if (rightValue === 0) {
+          return 0;
+        }
+        return leftValue / rightValue;
+      case "%":
+        if (rightValue === 0) {
+          return 0;
+        }
+        return leftValue % rightValue;
+      default: {
+        const unknown: never = spec.operator;
+        throw new Error(`Unknown math operator '${unknown}'`);
+      }
+    }
+  });
+
+  outputs.set("value", new Series(out) as AnySeries);
 }
 
 function compileBooleanLogicNode(

@@ -3,6 +3,7 @@ import {
   BooleanLogicNode,
   IndicatorNode,
   LogicalNode,
+  MathNode,
   OHLCVNode,
   StrategyGraphBuilder,
   StrategyGraphNodeId,
@@ -479,6 +480,116 @@ describe("strategyCompiler.compileSignals", () => {
 
     expect(result.map((row) => row.entrySignal)).toEqual([true, true, true]);
     expect(result.map((row) => row.entryDirection)).toEqual([1, 1, 1]);
+  });
+
+  it("mathノードの出力をlogical条件に利用できる", () => {
+    const close = new OHLCVNode(StrategyGraphNodeId("close-math"), {
+      kind: "ohlcv",
+      params: { kind: "CLOSE" },
+    });
+    const add = new MathNode(StrategyGraphNodeId("add-math"), {
+      kind: "math",
+      operator: "+",
+      inputs: { left: 0, right: 1 },
+      outputs: { value: 0 },
+    });
+    const cond = new LogicalNode(StrategyGraphNodeId("cond-math"), {
+      kind: "logical",
+      operator: ">",
+      inputs: { left: 0, right: 10 },
+      outputs: { true: true },
+    });
+    const entry = new ActionNode(StrategyGraphNodeId("entry-math"), {
+      kind: "action",
+      actionType: "marketEntry",
+      params: { side: "BUY", size: 1 },
+    });
+
+    const graph = new StrategyGraphBuilder()
+      .addNode(close)
+      .addNode(add)
+      .addNode(cond)
+      .addNode(entry)
+      .connect({
+        from: { nodeId: close.id, portName: "value" },
+        to: { nodeId: add.id, portName: "left" },
+      })
+      .connect({
+        from: { nodeId: add.id, portName: "value" },
+        to: { nodeId: cond.id, portName: "left" },
+      })
+      .connect({
+        from: { nodeId: cond.id, portName: "true" },
+        to: { nodeId: entry.id, portName: "trigger" },
+      })
+      .build();
+
+    const bars = makeBars([
+      { open: 0, close: 9 },
+      { open: 0, close: 10 },
+      { open: 0, close: 11 },
+    ]);
+
+    const result = compileSignals(graph, new DataFrame(bars)).toArray();
+    expect(result.map((row) => row.entrySignal)).toEqual([false, true, true]);
+  });
+
+  it("mathノードで余算（%）を評価できる", () => {
+    const close = new OHLCVNode(StrategyGraphNodeId("close-mod"), {
+      kind: "ohlcv",
+      params: { kind: "CLOSE" },
+    });
+    const mod = new MathNode(StrategyGraphNodeId("mod-node"), {
+      kind: "math",
+      operator: "%",
+      inputs: { left: 0, right: 2 },
+      outputs: { value: 0 },
+    });
+    const cond = new LogicalNode(StrategyGraphNodeId("mod-cond"), {
+      kind: "logical",
+      operator: "==",
+      inputs: { left: 0, right: 1 },
+      outputs: { true: true },
+    });
+    const entry = new ActionNode(StrategyGraphNodeId("mod-entry"), {
+      kind: "action",
+      actionType: "marketEntry",
+      params: { side: "BUY", size: 1 },
+    });
+
+    const graph = new StrategyGraphBuilder()
+      .addNode(close)
+      .addNode(mod)
+      .addNode(cond)
+      .addNode(entry)
+      .connect({
+        from: { nodeId: close.id, portName: "value" },
+        to: { nodeId: mod.id, portName: "left" },
+      })
+      .connect({
+        from: { nodeId: mod.id, portName: "value" },
+        to: { nodeId: cond.id, portName: "left" },
+      })
+      .connect({
+        from: { nodeId: cond.id, portName: "true" },
+        to: { nodeId: entry.id, portName: "trigger" },
+      })
+      .build();
+
+    const bars = makeBars([
+      { open: 0, close: 8 },
+      { open: 0, close: 9 },
+      { open: 0, close: 10 },
+      { open: 0, close: 11 },
+    ]);
+
+    const result = compileSignals(graph, new DataFrame(bars)).toArray();
+    expect(result.map((row) => row.entrySignal)).toEqual([
+      false,
+      true,
+      false,
+      true,
+    ]);
   });
 
   it("boolean logicノード（AND/OR/NOT）を評価できる", () => {

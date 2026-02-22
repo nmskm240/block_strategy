@@ -1,6 +1,7 @@
 export const NodeKind = {
   OHLCV: "ohlcv",
   INDICATOR: "indicator",
+  MATH: "math",
   ACTION: "action",
   LOGICAL: "logical",
   BOOLEAN_LOGIC: "booleanLogic",
