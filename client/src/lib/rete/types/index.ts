@@ -18,3 +18,9 @@ export enum ConditionOperators {
   GREATER_THAN = ">",
   GREATER_THAN_OR_EQUALS = ">="
 }
+
+export enum LogicGateOperators {
+  AND = "AND",
+  OR = "OR",
+  NOT = "NOT",
+}

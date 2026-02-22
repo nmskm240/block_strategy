@@ -1,9 +1,11 @@
 import {
   ActionNodeSpecSchema,
+  BooleanLogicNodeSpecSchema,
   IndicatorNodeSpecSchema,
   LogicalNodeSpecSchema,
   OhlcvNodeSpecSchema,
   type ActionNodeSpec,
+  type BooleanLogicNodeSpec,
   type IndicatorNodeSpec,
   type LogicalNodeSpec,
   type NodeSpec,
@@ -125,6 +127,31 @@ export class LogicalNode implements StrategyGraphNode {
 
     this.id = id;
     this.spec = parsed.data;
+  }
+}
+
+export class BooleanLogicNode implements StrategyGraphNode {
+  readonly id: StrategyGraphNodeId;
+  readonly spec: BooleanLogicNodeSpec;
+  readonly inputPorts: readonly GraphPort[];
+  readonly outputPorts: readonly GraphPort[] = [
+    { name: "true", type: "BOOLEAN" },
+  ];
+
+  constructor(id: StrategyGraphNodeId, spec: BooleanLogicNodeSpec) {
+    const parsed = BooleanLogicNodeSpecSchema.safeParse(spec);
+    if (!parsed.success) {
+      throw new Error(
+        `Invalid boolean logic node spec: ${parsed.error.message}`,
+      );
+    }
+
+    this.id = id;
+    this.spec = parsed.data;
+    this.inputPorts = Object.keys(parsed.data.inputs).map((name) => ({
+      name,
+      type: "BOOLEAN",
+    }));
   }
 }
 

@@ -5,6 +5,7 @@ import {
   IndicatorNode,
   ActionNode,
   LogicalNode,
+  BooleanLogicNode,
   type StrategyGraphNodeEdge,
   StrategyGraph,
   StrategyGraphBuilder,
@@ -28,6 +29,10 @@ function resolveNode(nodeData: GraphNode): StrategyGraphNode {
     )
     .with({ kind: NodeKind.ACTION }, (spec) => new ActionNode(nodeId, spec))
     .with({ kind: NodeKind.LOGICAL }, (spec) => new LogicalNode(nodeId, spec))
+    .with(
+      { kind: NodeKind.BOOLEAN_LOGIC },
+      (spec) => new BooleanLogicNode(nodeId, spec),
+    )
     .exhaustive();
 }
 

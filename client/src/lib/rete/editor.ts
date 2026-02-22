@@ -15,11 +15,14 @@ import {
   LabeledInputControlComponent,
   SelectControl,
   SelectControlComponent,
+  StepperControl,
+  StepperControlComponent,
 } from "./controls";
 import { ThemedNodeComponent } from "./customization";
 import {
   ActionNode,
   IndicatorNode,
+  LogicGateNode,
   NodeBase,
   LogicalNode,
   OHLCVNode,
@@ -66,6 +69,9 @@ export async function createEditor(container: HTMLElement) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return LabeledInputControlComponent;
           }
+          if (data.payload instanceof StepperControl) {
+            return StepperControlComponent;
+          }
           if (data.payload instanceof ClassicPreset.InputControl) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return Presets.classic.Control as any;
@@ -83,6 +89,47 @@ export async function createEditor(container: HTMLElement) {
   area.use(connection);
   area.use(render);
   area.use(contextMenu);
+
+  editor.addPipe((context) => {
+    if (
+      context.type === "nodecreated" &&
+      context.data instanceof LogicGateNode
+    ) {
+      context.data.setOnStructureChanged((removedInputKeys) => {
+        void (async () => {
+          const targetConnections = editor
+            .getConnections()
+            .filter(
+              (conn) =>
+                conn.target === context.data.id &&
+                removedInputKeys.includes(String(conn.targetInput)),
+            );
+          for (const conn of targetConnections) {
+            await editor.removeConnection(conn.id);
+          }
+          await area.update("node", String(context.data.id));
+        })();
+      });
+    }
+    return context;
+  });
+
+  AreaExtensions.showInputControl(area, ({ input, hasAnyConnection }) => {
+    const isOperandInput = editor.getNodes().some((node) => {
+      if (!(node instanceof LogicalNode)) {
+        if (node instanceof LogicGateNode) {
+          return node.hasInputPort(input);
+        }
+        return false;
+      }
+      return node.inputs.left === input || node.inputs.right === input;
+    });
+
+    if (isOperandInput) {
+      return !hasAnyConnection;
+    }
+    return true;
+  });
 
   AreaExtensions.simpleNodesOrder(area);
   await setupDefaultStrategy(editor, area);

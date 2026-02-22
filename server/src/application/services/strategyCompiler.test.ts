@@ -1,5 +1,6 @@
 import {
   ActionNode,
+  BooleanLogicNode,
   IndicatorNode,
   LogicalNode,
   OHLCVNode,
@@ -402,5 +403,174 @@ describe("strategyCompiler.compileSignals", () => {
       1,
       1,
     ]);
+  });
+
+  it("logicalの片側未接続入力はspecの数値入力を利用できる", () => {
+    const close = new OHLCVNode(StrategyGraphNodeId("close-literal-right"), {
+      kind: "ohlcv",
+      params: { kind: "CLOSE" },
+    });
+    const cond = new LogicalNode(StrategyGraphNodeId("cond-literal-right"), {
+      kind: "logical",
+      operator: ">",
+      inputs: { left: 0, right: 10 },
+      outputs: { true: true },
+    });
+    const entry = new ActionNode(StrategyGraphNodeId("entry-literal-right"), {
+      kind: "action",
+      actionType: "marketEntry",
+      params: { side: "BUY", size: 1 },
+    });
+
+    const graph = new StrategyGraphBuilder()
+      .addNode(close)
+      .addNode(cond)
+      .addNode(entry)
+      .connect({
+        from: { nodeId: close.id, portName: "value" },
+        to: { nodeId: cond.id, portName: "left" },
+      })
+      .connect({
+        from: { nodeId: cond.id, portName: "true" },
+        to: { nodeId: entry.id, portName: "trigger" },
+      })
+      .build();
+
+    const bars = makeBars([
+      { open: 0, close: 9 },
+      { open: 0, close: 10 },
+      { open: 0, close: 11 },
+    ]);
+
+    const result = compileSignals(graph, new DataFrame(bars)).toArray();
+
+    expect(result.map((row) => row.entrySignal)).toEqual([false, false, true]);
+  });
+
+  it("logicalの両側未接続入力はspecの数値入力同士で評価できる", () => {
+    const cond = new LogicalNode(StrategyGraphNodeId("cond-literal-both"), {
+      kind: "logical",
+      operator: "<=",
+      inputs: { left: 1, right: 2 },
+      outputs: { true: true },
+    });
+    const entry = new ActionNode(StrategyGraphNodeId("entry-literal-both"), {
+      kind: "action",
+      actionType: "marketEntry",
+      params: { side: "BUY", size: 1 },
+    });
+
+    const graph = new StrategyGraphBuilder()
+      .addNode(cond)
+      .addNode(entry)
+      .connect({
+        from: { nodeId: cond.id, portName: "true" },
+        to: { nodeId: entry.id, portName: "trigger" },
+      })
+      .build();
+
+    const bars = makeBars([
+      { open: 1, close: 1 },
+      { open: 2, close: 2 },
+      { open: 3, close: 3 },
+    ]);
+
+    const result = compileSignals(graph, new DataFrame(bars)).toArray();
+
+    expect(result.map((row) => row.entrySignal)).toEqual([true, true, true]);
+    expect(result.map((row) => row.entryDirection)).toEqual([1, 1, 1]);
+  });
+
+  it("boolean logicノード（AND/OR/NOT）を評価できる", () => {
+    const close = new OHLCVNode(StrategyGraphNodeId("close-logic-gate"), {
+      kind: "ohlcv",
+      params: { kind: "CLOSE" },
+    });
+    const gt10 = new LogicalNode(StrategyGraphNodeId("gt10"), {
+      kind: "logical",
+      operator: ">",
+      inputs: { left: 0, right: 10 },
+      outputs: { true: true },
+    });
+    const lt13 = new LogicalNode(StrategyGraphNodeId("lt13"), {
+      kind: "logical",
+      operator: "<",
+      inputs: { left: 0, right: 13 },
+      outputs: { true: true },
+    });
+    const andNode = new BooleanLogicNode(StrategyGraphNodeId("and-node"), {
+      kind: "booleanLogic",
+      operator: "AND",
+      inputs: { in0: false, in1: false },
+      outputs: { true: true },
+    });
+    const notNode = new BooleanLogicNode(StrategyGraphNodeId("not-node"), {
+      kind: "booleanLogic",
+      operator: "NOT",
+      inputs: { in0: false },
+      outputs: { true: true },
+    });
+    const orNode = new BooleanLogicNode(StrategyGraphNodeId("or-node"), {
+      kind: "booleanLogic",
+      operator: "OR",
+      inputs: { in0: false, in1: false },
+      outputs: { true: true },
+    });
+    const entry = new ActionNode(StrategyGraphNodeId("entry-logic-gate"), {
+      kind: "action",
+      actionType: "marketEntry",
+      params: { side: "BUY", size: 1 },
+    });
+
+    const graph = new StrategyGraphBuilder()
+      .addNode(close)
+      .addNode(gt10)
+      .addNode(lt13)
+      .addNode(andNode)
+      .addNode(notNode)
+      .addNode(orNode)
+      .addNode(entry)
+      .connect({
+        from: { nodeId: close.id, portName: "value" },
+        to: { nodeId: gt10.id, portName: "left" },
+      })
+      .connect({
+        from: { nodeId: close.id, portName: "value" },
+        to: { nodeId: lt13.id, portName: "left" },
+      })
+      .connect({
+        from: { nodeId: gt10.id, portName: "true" },
+        to: { nodeId: andNode.id, portName: "in0" },
+      })
+      .connect({
+        from: { nodeId: lt13.id, portName: "true" },
+        to: { nodeId: andNode.id, portName: "in1" },
+      })
+      .connect({
+        from: { nodeId: gt10.id, portName: "true" },
+        to: { nodeId: notNode.id, portName: "in0" },
+      })
+      .connect({
+        from: { nodeId: andNode.id, portName: "true" },
+        to: { nodeId: orNode.id, portName: "in0" },
+      })
+      .connect({
+        from: { nodeId: notNode.id, portName: "true" },
+        to: { nodeId: orNode.id, portName: "in1" },
+      })
+      .connect({
+        from: { nodeId: orNode.id, portName: "true" },
+        to: { nodeId: entry.id, portName: "trigger" },
+      })
+      .build();
+
+    const bars = makeBars([
+      { open: 0, close: 9 },  // and=false, not=true => or=true
+      { open: 0, close: 11 }, // and=true, not=false => or=true
+      { open: 0, close: 14 }, // and=false, not=false => or=false
+    ]);
+
+    const result = compileSignals(graph, new DataFrame(bars)).toArray();
+    expect(result.map((row) => row.entrySignal)).toEqual([true, true, false]);
   });
 });

@@ -11,6 +11,7 @@ import {
 import {
   IndicatorRegistry,
   NodeKind,
+  type BooleanLogicNodeSpec,
   type IndicatorKind,
   type IndicatorNodeSpec,
   type LogicalNodeSpec,
@@ -128,6 +129,9 @@ export function compileNode(
     )
     .with({ kind: NodeKind.LOGICAL }, (spec) =>
       compileLogicalNode(node.id, spec, context, outputs),
+    )
+    .with({ kind: NodeKind.BOOLEAN_LOGIC }, (spec) =>
+      compileBooleanLogicNode(node.id, spec, context, outputs),
     )
     .with({ kind: NodeKind.ACTION }, () => {
       // Action nodes are control sinks and do not emit series.
@@ -311,6 +315,54 @@ function compileLogicalNode(
       }
     }
   });
+  outputs.set("true", new Series(out) as AnySeries);
+}
+
+function compileBooleanLogicNode(
+  nodeId: StrategyGraphNodeId,
+  spec: BooleanLogicNodeSpec,
+  context: CompileContext,
+  outputs: NodeSeriesMap,
+): void {
+  const rowCount = context.inputDf.count();
+  const inputKeys = Object.keys(spec.inputs).sort((a, b) => {
+    const aIndex = Number.parseInt(a.replace(/^in/, ""), 10);
+    const bIndex = Number.parseInt(b.replace(/^in/, ""), 10);
+    return aIndex - bIndex;
+  });
+
+  const inputValues = inputKeys.map((key) => {
+    const inputEdge = context.incomingByTargetPort.get(
+      StrategyGraphNodePortKey({ nodeId, portName: key }),
+    );
+    if (!inputEdge) {
+      return new Array(rowCount).fill(spec.inputs[key]);
+    }
+    return asBooleanSeries(
+      getNodePortSeries(inputEdge.from.nodeId, inputEdge.from.portName, context),
+    ).toArray();
+  });
+
+  const out = new Array<boolean>(rowCount).fill(false);
+  for (let i = 0; i < rowCount; i += 1) {
+    const values = inputValues.map((series) => Boolean(series[i]));
+    switch (spec.operator) {
+      case "AND":
+        out[i] = values.every(Boolean);
+        break;
+      case "OR":
+        out[i] = values.some(Boolean);
+        break;
+      case "NOT":
+        out[i] = !values[0];
+        break;
+      default: {
+        const unknown: never = spec.operator;
+        throw new Error(`Unknown boolean logic operator '${unknown}'`);
+      }
+    }
+  }
+
   outputs.set("true", new Series(out) as AnySeries);
 }
 

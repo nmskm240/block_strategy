@@ -1,4 +1,5 @@
 export { SelectControl, SelectControlComponent } from "./SelectControl";
+export { StepperControl, StepperControlComponent } from "./StepperControl";
 export {
   LabeledInputControl,
   LabeledInputControlComponent,

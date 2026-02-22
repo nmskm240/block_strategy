@@ -1,6 +1,7 @@
 import { ClassicPreset } from "rete";
 import {
   ActionKind,
+  type BooleanLogicOperator,
   type GraphNode,
   getIndicatorParamDefault,
   type IndicatorKind,
@@ -12,11 +13,12 @@ import {
   CustomControls,
   LabeledInputControl,
   SelectControl,
+  StepperControl,
   getNumberControlValue,
   getSelectControlValue,
 } from "./controls";
 import { socket } from "./sockets";
-import { ConditionOperators } from "./types";
+import { ConditionOperators, LogicGateOperators } from "./types";
 
 export abstract class NodeBase extends ClassicPreset.Node<
   Record<string, ClassicPreset.Socket>,
@@ -143,13 +145,13 @@ export class LogicalNode extends NodeBase {
 
     const leftInput = new ClassicPreset.Input(socket, "left");
     leftInput.addControl(
-      new LabeledInputControl("number", { label: "left", initial: 0 }),
+      new ClassicPreset.InputControl("number", { initial: 0 }),
     );
     this.addInput("left", leftInput);
 
     const rightInput = new ClassicPreset.Input(socket, "right");
     rightInput.addControl(
-      new LabeledInputControl("number", { label: "right", initial: 0 }),
+      new ClassicPreset.InputControl("number", { initial: 0 }),
     );
     this.addInput("right", rightInput);
 
@@ -169,6 +171,134 @@ export class LogicalNode extends NodeBase {
           left,
           right,
         },
+        outputs: {
+          true: true,
+        },
+      },
+    };
+  }
+}
+
+export class LogicGateNode extends NodeBase {
+  readonly operator: LogicGateOperators;
+  private isSyncingInputCountControl = false;
+  private onStructureChanged?: (removedInputKeys: string[]) => void;
+
+  constructor(operator: LogicGateOperators) {
+    super(operator.toString());
+    this.operator = operator;
+
+    const initialInputCount = operator === LogicGateOperators.NOT ? 1 : 2;
+    this.ensureInputCount(initialInputCount);
+
+    if (operator !== LogicGateOperators.NOT) {
+      this.addControl(
+        "inputCount",
+        new StepperControl({
+          label: "inputs",
+          initial: initialInputCount,
+          min: 2,
+          max: 8,
+          change: (value) => {
+            if (this.isSyncingInputCountControl) {
+              return;
+            }
+            this.setInputCount(value);
+          },
+        }),
+      );
+    }
+
+    this.addOutput("true", new ClassicPreset.Output(socket, "true"));
+  }
+
+  setOnStructureChanged(callback: (removedInputKeys: string[]) => void): void {
+    this.onStructureChanged = callback;
+  }
+
+  hasInputPort(input: ClassicPreset.Input<ClassicPreset.Socket>): boolean {
+    return Object.values(this.inputs).some((nodeInput) => nodeInput === input);
+  }
+
+  private clampInputCount(value: number): number {
+    if (!Number.isFinite(value)) {
+      return this.operator === LogicGateOperators.NOT ? 1 : 2;
+    }
+    if (this.operator === LogicGateOperators.NOT) {
+      return 1;
+    }
+    return Math.max(2, Math.min(8, Math.trunc(value)));
+  }
+
+  private toInputKey(index: number): string {
+    return `in${index}`;
+  }
+
+  private getInputKeys(): string[] {
+    return Object.keys(this.inputs).sort((a, b) => {
+      const ai = Number.parseInt(a.replace(/^in/, ""), 10);
+      const bi = Number.parseInt(b.replace(/^in/, ""), 10);
+      return ai - bi;
+    });
+  }
+
+  private ensureInputCount(count: number): string[] {
+    const nextCount = this.clampInputCount(count);
+    const currentKeys = this.getInputKeys();
+    const removedInputKeys: string[] = [];
+
+    if (currentKeys.length < nextCount) {
+      for (let i = currentKeys.length; i < nextCount; i += 1) {
+        const key = this.toInputKey(i);
+        const input = new ClassicPreset.Input(socket, key);
+        // input.addControl(new ClassicPreset.InputControl("number", { initial: 0 }));
+        this.addInput(key, input);
+      }
+    } else if (currentKeys.length > nextCount) {
+      for (let i = currentKeys.length - 1; i >= nextCount; i -= 1) {
+        const key = this.toInputKey(i);
+        if (this.inputs[key]) {
+          this.removeInput(key);
+          removedInputKeys.push(key);
+        }
+      }
+    }
+
+    if (this.controls.inputCount instanceof StepperControl) {
+      const currentValue = Number(this.controls.inputCount.value ?? nextCount);
+      if (currentValue !== nextCount) {
+        this.isSyncingInputCountControl = true;
+        this.controls.inputCount.setValue(nextCount);
+        this.isSyncingInputCountControl = false;
+      }
+    }
+
+    return removedInputKeys;
+  }
+
+  setInputCount(value: number): void {
+    const removedInputKeys = this.ensureInputCount(value);
+    if (removedInputKeys.length > 0) {
+      this.onStructureChanged?.(removedInputKeys);
+    } else {
+      this.onStructureChanged?.([]);
+    }
+  }
+
+  toGraphNode(): GraphNode {
+    const inputs = Object.fromEntries(
+      this.getInputKeys().map((key) => [
+        key,
+        Boolean(getNumberControlValue(this.inputs[key]?.control, 0)),
+      ]),
+    );
+
+    return {
+      id: String(this.id),
+      spec: {
+        kind: NodeKind.BOOLEAN_LOGIC,
+        operator: this.operator as BooleanLogicOperator,
+        inputs,
         outputs: {
           true: true,
         },

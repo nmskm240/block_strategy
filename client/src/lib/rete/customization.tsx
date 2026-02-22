@@ -4,6 +4,7 @@ import "./styles/theme.css";
 import {
   ActionNode,
   IndicatorNode,
+  LogicGateNode,
   LogicalNode,
   OHLCVNode,
 } from "./nodes";
@@ -18,13 +19,16 @@ function getNodeTypeClass(node: unknown): string {
   if (node instanceof LogicalNode) {
     return "rete-node-logical";
   }
+  if (node instanceof LogicGateNode) {
+    return "rete-node-logical";
+  }
   if (node instanceof ActionNode) {
     return "rete-node-action";
   }
   return "rete-node-default";
 }
 
-export function ThemedNodeComponent(props: Parameters<typeof Presets.classic.Node>[0]) {
+export function ThemedNodeComponent(props: React.ComponentProps<typeof Presets.classic.Node>) {
   const nodeClass = getNodeTypeClass(props.data);
   return (
     <div className={`rete-themed-node ${nodeClass}`}>
