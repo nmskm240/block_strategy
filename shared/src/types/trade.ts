@@ -27,7 +27,15 @@ export const OhlcvKind = z.enum(["OPEN", "HIHG", "LOW", "CLOSE", "VOLUME"]);
 
 export type OhlcvKind = z.infer<typeof OhlcvKind>;
 
-export const Timeframe = z.enum(["1m", "5m", "15m", "30m", "1h", "4h", "1d"]);
+export const Timeframe = z.enum([
+  "1min",
+  "5min",
+  "15min",
+  "30min",
+  "1h",
+  "4h",
+  "1d",
+]);
 
 export type Timeframe = z.infer<typeof Timeframe>;
 
