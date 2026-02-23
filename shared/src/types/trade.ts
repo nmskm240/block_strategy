@@ -27,18 +27,21 @@ export const OhlcvKind = z.enum(["OPEN", "HIHG", "LOW", "CLOSE", "VOLUME"]);
 
 export type OhlcvKind = z.infer<typeof OhlcvKind>;
 
-export const TradeSide = z.enum(["BUY", "SELL"]);
-
-export type TradeSide = z.infer<typeof TradeSide>;
-
 export const Timeframe = z.enum(["1m", "5m", "15m", "30m", "1h", "4h", "1d"]);
 
 export type Timeframe = z.infer<typeof Timeframe>;
 
 export const TradeSchema = z.object({
-  side: TradeSide,
-  price: z.number(),
-  time: z.string(),
+  direction: z.enum(["long", "short"]),
+  entryTime: z.coerce.date(),
+  entryPrice: z.number(),
+  exitTime: z.coerce.date(),
+  exitPrice: z.number(),
+  profit: z.number(),
+  profitPct: z.number(),
+  growth: z.number(),
+  riskPct: z.number().optional(),
+  rmultiple: z.number().optional(),
 });
 
 export type Trade = z.infer<typeof TradeSchema>;

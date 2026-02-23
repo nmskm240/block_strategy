@@ -1,4 +1,4 @@
-import { ApiClient } from "@/services/apiClient";
+import { apiClient } from "@/services/apiClient";
 import {
   ImportTwelveDataRequestSchema,
   ImportTwelveDataResponseSchema,
@@ -25,13 +25,11 @@ export type ImportTwelveDataInput = {
 };
 
 export class AdminApiClient {
-  private api: ApiClient;
+  constructor(readonly api = apiClient) {}
 
-  constructor(api = new ApiClient()) {
-    this.api = api;
-  }
-
-  async seedOhlcv(input: SeedOhlcvInput = {}): Promise<SeedOhlcvResponse["data"]> {
+  async seedOhlcv(
+    input: SeedOhlcvInput = {},
+  ): Promise<SeedOhlcvResponse["data"]> {
     const payload = SeedOhlcvRequestSchema.parse(input);
     const response = await this.api.post("/admin/seed-ohlcv", payload);
     const parsed = SeedOhlcvResponseSchema.safeParse(response);
@@ -50,7 +48,9 @@ export class AdminApiClient {
     return parsed.data.data.files;
   }
 
-  async getOhlcvFileContent(key: string): Promise<OhlcvFileContentResponse["data"]> {
+  async getOhlcvFileContent(
+    key: string,
+  ): Promise<OhlcvFileContentResponse["data"]> {
     const encodedKey = encodeURIComponent(key);
     const response = await this.api.get(`/admin/ohlcv-file?key=${encodedKey}`);
     const parsed = OhlcvFileContentResponseSchema.safeParse(response);

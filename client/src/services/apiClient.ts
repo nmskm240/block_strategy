@@ -2,7 +2,7 @@ import { HttpClient, HttpClientError } from "shared";
 
 export class ApiClientError extends HttpClientError {}
 
-export type ApiClientOptions = {
+type ApiClientOptions = {
   baseUrl?: string;
 };
 
@@ -50,3 +50,5 @@ export class ApiClient {
     });
   }
 }
+
+export const apiClient = new ApiClient();

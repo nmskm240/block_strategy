@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useAdminApiClient } from "@/contexts/apiClientContext";
 import type { DateRange, SupportedSymbol } from "shared";
+import { AdminApiClient } from "@/services/adminClient";
 
 type UseTwelveDataImportOptions = {
   onSuccess?: () => Promise<void> | void;
@@ -9,7 +9,7 @@ type UseTwelveDataImportOptions = {
 export function useTwelveDataImport(
   options: UseTwelveDataImportOptions = {},
 ) {
-  const api = useAdminApiClient();
+  const api = new AdminApiClient();
   const [symbol, setSymbol] = useState<SupportedSymbol>("AAPL");
   const today = new Date();
   today.setHours(0, 0, 0, 0);

@@ -1,59 +1,36 @@
-import { useState } from "react";
-import { useBacktestApiClient } from "@/contexts/apiClientContext";
-import type { EditorHandle } from "@/lib/rete";
-import type { BacktestRunSuccessPayload } from "@/types";
-import type { SupportedSymbol } from "shared";
+import { BacktestApiClient } from "@/services/backtestClient";
+import { useRef } from "react";
+import type { BacktestEnvironment, BacktestResult, Graph } from "shared";
 
-type UseBacktestRunnerArgs = {
-  editorHandle: EditorHandle | null;
-  onSuccess: (payload: BacktestRunSuccessPayload) => void;
-  onError: (message: string) => void;
+type BacktestRunner = {
+  isRunning: boolean;
+  run: (
+    graph: Graph,
+    environment: BacktestEnvironment,
+  ) => Promise<BacktestResult>;
 };
 
-type RunBacktestParams = {
-  symbol: SupportedSymbol;
-  since: Date;
-  until: Date;
-};
+export function useBacktestRunner(): BacktestRunner {
+  const isRunningRef = useRef(false);
+  const backtestClient = new BacktestApiClient();
 
-export function useBacktestRunner({
-  editorHandle,
-  onSuccess,
-  onError,
-}: UseBacktestRunnerArgs) {
-  const [isRunning, setIsRunning] = useState(false);
-  const backtestClient = useBacktestApiClient();
-
-  async function runBacktest({ symbol, since, until }: RunBacktestParams) {
-    if (!editorHandle || isRunning) return;
-
-    setIsRunning(true);
-    const graph = editorHandle.getGraph();
-
+  async function run(graph: Graph, environment: BacktestEnvironment) {
+    if (isRunningRef.current) {
+      throw new Error("Backtest is already running");
+    }
+    isRunningRef.current = true;
     try {
-      const result = await backtestClient.runBacktest({
+      return await backtestClient.runBacktest({
         graph,
-        environment: {
-          symbol,
-          timeframe: "1h",
-          testRange: { since, until },
-          cash: 10000,
-        },
+        environment,
       });
-      onSuccess({ result, symbol, since, until });
-    } catch (error) {
-      console.error(error);
-      const message =
-        error instanceof Error ? error.message : "Failed to run backtest";
-      onError(message);
     } finally {
-      setIsRunning(false);
+      isRunningRef.current = false;
     }
   }
 
   return {
-    isRunning,
-    canRun: Boolean(editorHandle),
-    runBacktest,
+    isRunning: isRunningRef.current,
+    run,
   };
 }

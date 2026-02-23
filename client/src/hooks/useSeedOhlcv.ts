@@ -1,14 +1,12 @@
+import { AdminApiClient } from "@/services/adminClient";
 import { useState } from "react";
-import { useAdminApiClient } from "@/contexts/apiClientContext";
 
 type UseSeedOhlcvOptions = {
   onSuccess?: () => Promise<void> | void;
 };
 
-export function useSeedOhlcv(
-  options: UseSeedOhlcvOptions = {},
-) {
-  const api = useAdminApiClient();
+export function useSeedOhlcv(options: UseSeedOhlcvOptions = {}) {
+  const api = new AdminApiClient();
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

@@ -1,29 +1,14 @@
-import { BacktestRequestSchema, BacktestResponseSchema } from "shared";
-import type { BacktestResult } from "@/types";
-import type { BacktestEnvironment, Graph } from "shared";
-import { ApiClient } from "@/services/apiClient";
-
-export type RunBacktestInput = {
-  graph: Graph;
-  environment: BacktestEnvironment;
-};
+import { BacktestResponseSchema } from "shared";
+import type { BacktestRequest, BacktestResult } from "shared";
+import { apiClient } from "@/services/apiClient";
 
 export class BacktestApiClient {
-  private api: ApiClient;
+  constructor(readonly api = apiClient) {}
 
-  constructor(api = new ApiClient()) {
-    this.api = api;
-  }
+  async runBacktest(request: BacktestRequest): Promise<BacktestResult> {
+    const response = await this.api.post("/backtest", request);
+    const parsed = BacktestResponseSchema.parse(response);
 
-  async runBacktest(input: RunBacktestInput): Promise<BacktestResult> {
-    const payload = BacktestRequestSchema.parse(input);
-    const response = await this.api.post("/backtest", payload);
-    const parsed = BacktestResponseSchema.safeParse(response);
-
-    if (!parsed.success) {
-      throw new Error("Invalid response payload from backtest API");
-    }
-
-    return parsed.data.data.result;
+    return parsed.data.result;
   }
 }

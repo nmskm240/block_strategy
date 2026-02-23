@@ -1,6 +1,6 @@
 import type { StrategyGraph } from "@server/domain/strategyGraph";
 import { DataFrame } from "data-forge";
-import { analyze, backtest, type IBar } from "grademark";
+import { analyze, backtest, computeEquityCurve, type IBar } from "grademark";
 import { TradeDirection, type IStrategy } from "grademark/build/lib/strategy";
 import type { BacktestEnvironment, BacktestResult, OHLCV } from "shared";
 import { compileSignals, type StrategySignalBar } from "./strategyCompiler";
@@ -45,34 +45,13 @@ export class BacktestService {
     const withSignals = compileSignals(graph, sourceDf);
     const trades = backtest(StrategyTemplate, withSignals);
     const analysis = analyze(environment.cash, trades);
-    const lastPrice = ohlcvs[ohlcvs.length - 1]?.close ?? 0;
-
-    console.log(trades);
+    const equityCurve = computeEquityCurve(environment.cash, trades);
 
     return {
-      trades: trades.flatMap((trade) => {
-        const entrySide =
-          trade.direction === TradeDirection.Short ? "SELL" : "BUY";
-        const exitSide = entrySide === "BUY" ? "SELL" : "BUY";
-        return [
-          {
-            side: entrySide,
-            price: trade.entryPrice,
-            time: trade.entryTime.toISOString(),
-          },
-          {
-            side: exitSide,
-            price: trade.exitPrice,
-            time: trade.exitTime.toISOString(),
-          },
-        ];
-      }),
-      startCash: environment.cash,
-      finalCash: analysis.finalCapital,
-      finalPosition: 0,
-      finalEquity: analysis.finalCapital,
-      pnl: analysis.profit,
-      lastPrice,
+      environment,
+      trades,
+      analysis,
+      equityCurve,
     };
   }
 }

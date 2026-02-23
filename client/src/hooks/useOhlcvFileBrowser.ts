@@ -1,9 +1,9 @@
+import { AdminApiClient } from "@/services/adminClient";
 import { useCallback, useEffect, useState } from "react";
 import type { OHLCV } from "shared";
-import { useAdminApiClient } from "@/contexts/apiClientContext";
 
 export function useOhlcvFileBrowser() {
-  const api = useAdminApiClient();
+  const api = new AdminApiClient();
   const [files, setFiles] = useState<string[]>([]);
   const [filesLoading, setFilesLoading] = useState(false);
   const [filesError, setFilesError] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export function useOhlcvFileBrowser() {
       setFiles(nextFiles);
       if (nextFiles.length > 0) {
         setSelectedFile((current) =>
-          current && nextFiles.includes(current) ? current : (nextFiles[0] ?? ""),
+          current && nextFiles.includes(current) ? current : nextFiles[0] ?? "",
         );
       } else {
         setSelectedFile("");

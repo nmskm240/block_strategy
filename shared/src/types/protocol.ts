@@ -1,6 +1,11 @@
 import * as z from "zod";
 import { Graph } from "./graph";
-import { OHLCVSchema, SupportedSymbolSchema, Timeframe, TradeSchema } from "./trade";
+import {
+  OHLCVSchema,
+  SupportedSymbolSchema,
+  Timeframe,
+  TradeSchema,
+} from "./trade";
 
 export const DateRangeSchema = z
   .object({
@@ -13,6 +18,26 @@ export const DateRangeSchema = z
   });
 
 export type DateRange = z.infer<typeof DateRangeSchema>;
+
+export const BacktestAnalysisSchema = z.object({
+  startingCapital: z.number(),
+  finalCapital: z.number(),
+  profit: z.number(),
+  profitPct: z.number(),
+  growth: z.number(),
+  totalTrades: z.number().int().nonnegative(),
+  maxDrawdown: z.number(),
+  maxDrawdownPct: z.number(),
+  maxRiskPct: z.number().optional(),
+  expectency: z.number().optional(),
+  rmultipleStdDev: z.number().optional(),
+  systemQuality: z.number().optional(),
+  profitFactor: z.number().optional(),
+  numWinningTrades: z.number().int().nonnegative(),
+  numLosingTrades: z.number().int().nonnegative(),
+  averageWinningTrade: z.number().optional(),
+  averageLosingTrade: z.number().optional(),
+});
 
 export const BacktestEnvironmentSchema = z.object({
   symbol: SupportedSymbolSchema,
@@ -31,13 +56,10 @@ export const BacktestRequestSchema = z.object({
 export type BacktestRequest = z.infer<typeof BacktestRequestSchema>;
 
 export const BacktestResultSchema = z.object({
-  trades: z.array(TradeSchema),
-  startCash: z.number(),
-  finalCash: z.number(),
-  finalPosition: z.number(),
-  finalEquity: z.number(),
-  pnl: z.number(),
-  lastPrice: z.number(),
+  environment: BacktestEnvironmentSchema,
+  trades: z.array(TradeSchema).default([]),
+  analysis: BacktestAnalysisSchema,
+  equityCurve: z.array(z.number()),
 });
 
 export type BacktestResult = z.infer<typeof BacktestResultSchema>;
@@ -96,14 +118,16 @@ export type OhlcvFileContentResponse = z.infer<
   typeof OhlcvFileContentResponseSchema
 >;
 
-export const ImportTwelveDataRequestSchema = z.object({
-  symbol: SupportedSymbolSchema,
-  since: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "since must be YYYY-MM-DD"),
-  until: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "until must be YYYY-MM-DD"),
-}).refine((input) => input.since <= input.until, {
-  message: "since must be earlier than or equal to until",
-  path: ["until"],
-});
+export const ImportTwelveDataRequestSchema = z
+  .object({
+    symbol: SupportedSymbolSchema,
+    since: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "since must be YYYY-MM-DD"),
+    until: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "until must be YYYY-MM-DD"),
+  })
+  .refine((input) => input.since <= input.until, {
+    message: "since must be earlier than or equal to until",
+    path: ["until"],
+  });
 
 export type ImportTwelveDataRequest = z.infer<
   typeof ImportTwelveDataRequestSchema
