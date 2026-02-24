@@ -27,6 +27,18 @@ export default defineConfig({
             return "rete";
           }
 
+          if (
+            id.includes("/@mui/") ||
+            id.includes("/@emotion/") ||
+            id.includes("/@popperjs/")
+          ) {
+            return "vendor-mui";
+          }
+
+          if (id.includes("/@lottiefiles/dotlottie-react/")) {
+            return "lottie";
+          }
+
           return undefined;
         },
       },

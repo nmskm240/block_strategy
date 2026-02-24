@@ -1,11 +1,15 @@
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import { useEffect, useState } from "react";
+import { lazy, useEffect, useState } from "react";
 import { appPaletteCustom } from "@/theme";
 
+const DotLottiePlayer = lazy(async () => {
+  const mod = await import("@lottiefiles/dotlottie-react");
+  return { default: mod.DotLottieReact };
+});
+
 export function BuilderLoadingFallback() {
-  const [loadingAnimationData, setLoadingAnimationData] = useState<string | null>(
-    null,
-  );
+  const [loadingAnimationData, setLoadingAnimationData] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     let active = true;
@@ -34,14 +38,16 @@ export function BuilderLoadingFallback() {
       }}
     >
       {loadingAnimationData ? (
-        <DotLottieReact
+        <DotLottiePlayer
           data={loadingAnimationData}
           autoplay
           loop
           style={{ width: 220, height: 220 }}
         />
       ) : (
-        <div style={{ fontSize: 14, color: appPaletteCustom.overlay.loadingText }}>
+        <div
+          style={{ fontSize: 14, color: appPaletteCustom.overlay.loadingText }}
+        >
           Loading...
         </div>
       )}
