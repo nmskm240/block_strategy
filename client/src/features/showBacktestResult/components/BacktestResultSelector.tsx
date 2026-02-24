@@ -3,7 +3,7 @@ import type { BacktestResult } from "shared";
 
 type Props = {
   backtests: BacktestResult[];
-  selectedResult: BacktestResult | null;
+  selectedResult?: BacktestResult;
   onSelectResult: (result: BacktestResult) => void;
 };
 

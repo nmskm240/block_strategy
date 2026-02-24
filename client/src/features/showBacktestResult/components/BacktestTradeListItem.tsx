@@ -17,8 +17,6 @@ export function BacktestTradeListItem(trade: Trade) {
       elevation={0}
       sx={{
         borderRadius: 0.5,
-        bgcolor: "rgba(255,255,255,0.03)",
-        color: "text.primary",
         border: "1px solid rgba(255,255,255,0.06)",
         "&:before": { display: "none" },
       }}

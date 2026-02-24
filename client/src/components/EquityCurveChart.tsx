@@ -1,66 +1,115 @@
-import { useEffect, useRef } from "react";
 import {
-  ColorType,
-  LineSeries,
-  createChart,
-  type IChartApi,
-  type UTCTimestamp,
-} from "lightweight-charts";
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import type { Trade } from "shared";
 
 type EquityCurveChartProps = {
-  points: Array<{ time: UTCTimestamp; value: number }>;
+  trades: Trade[];
+  equityCurve: number[];
 };
 
-export function EquityCurveChart({ points }: EquityCurveChartProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const chartRef = useRef<IChartApi | null>(null);
+type EquityPoint = {
+  index: number;
+  value: number;
+  timeLabel: string;
+};
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+function formatTimeLabel(date: Date | undefined, fallbackIndex: number): string {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return `#${fallbackIndex + 1}`;
+  }
+  return date.toLocaleString();
+}
 
-    const chart = createChart(container, {
-      width: container.clientWidth,
-      height: 180,
-      layout: {
-        background: { type: ColorType.Solid, color: "#0b1119" },
-        textColor: "#cad4e3",
-      },
-      grid: {
-        vertLines: { color: "rgba(255,255,255,0.07)" },
-        horzLines: { color: "rgba(255,255,255,0.07)" },
-      },
-      rightPriceScale: {
-        borderColor: "rgba(255,255,255,0.2)",
-      },
-      timeScale: {
-        borderColor: "rgba(255,255,255,0.2)",
-        timeVisible: true,
-      },
-    });
+function buildEquityPoints(trades: Trade[], equityCurve: number[]): EquityPoint[] {
+  return equityCurve.map((value, index) => {
+    // grademark often returns an initial capital point at index 0.
+    const trade =
+      index === 0 ? trades[0] : trades[index - 1] ?? trades[index];
+    const time = index === 0 ? trade?.entryTime : trade?.exitTime ?? trade?.entryTime;
 
-    const lineSeries = chart.addSeries(LineSeries, {
-      color: "#4da3ff",
-      lineWidth: 2,
-      priceLineVisible: false,
-      lastValueVisible: true,
-    });
-    lineSeries.setData(points);
-    chart.timeScale().fitContent();
-
-    const resizeObserver = new ResizeObserver(() => {
-      if (!containerRef.current) return;
-      chart.applyOptions({ width: containerRef.current.clientWidth });
-    });
-    resizeObserver.observe(container);
-
-    chartRef.current = chart;
-    return () => {
-      resizeObserver.disconnect();
-      chart.remove();
-      chartRef.current = null;
+    return {
+      index,
+      value,
+      timeLabel: formatTimeLabel(time, index),
     };
-  }, [points]);
+  });
+}
 
-  return <div ref={containerRef} style={{ width: "100%", minHeight: 180 }} />;
+export function EquityCurveChart({ trades, equityCurve }: EquityCurveChartProps) {
+  const data = buildEquityPoints(trades, equityCurve);
+
+  if (data.length === 0) {
+    return (
+      <div
+        style={{
+          width: "100%",
+          height: 220,
+          display: "grid",
+          placeItems: "center",
+          color: "#94a3b8",
+          fontSize: 12,
+        }}
+      >
+        No equity curve data
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ width: "100%", height: 220 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data} margin={{ top: 12, right: 12, bottom: 4, left: 4 }}>
+          <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
+          <XAxis
+            dataKey="index"
+            tick={{ fill: "#94a3b8", fontSize: 11 }}
+            tickLine={false}
+            axisLine={{ stroke: "rgba(255,255,255,0.16)" }}
+            tickFormatter={(value) => `${Number(value) + 1}`}
+          />
+          <YAxis
+            tick={{ fill: "#94a3b8", fontSize: 11 }}
+            tickLine={false}
+            axisLine={false}
+            width={64}
+            tickFormatter={(value) =>
+              Number(value).toLocaleString(undefined, { maximumFractionDigits: 0 })
+            }
+          />
+          <Tooltip
+            contentStyle={{
+              background: "#101722",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: 8,
+              color: "#e2e8f0",
+            }}
+            labelStyle={{ color: "#94a3b8" }}
+            formatter={(value: number | undefined) => [
+              Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 }),
+              "Equity",
+            ]}
+            labelFormatter={(_, payload) => {
+              const row = payload?.[0]?.payload as EquityPoint | undefined;
+              return row ? row.timeLabel : "";
+            }}
+          />
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="#4da3ff"
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 3, fill: "#4da3ff", stroke: "#dbeafe" }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
 }
