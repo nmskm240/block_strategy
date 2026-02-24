@@ -44,7 +44,7 @@ export function BacktestResultDetail({ result }: Props) {
       >
         <Typography variant="h6">Trades</Typography>
         <Divider />
-        <Box sx={{ maxHeight: 160, overflowY: "auto" }}>
+        <Box>
           <List disablePadding sx={{ display: "grid", gap: 0.5 }}>
             {result?.trades.map((trade, index) => (
               <BacktestTradeListItem key={index} {...trade} />
