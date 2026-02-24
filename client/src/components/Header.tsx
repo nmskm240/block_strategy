@@ -32,7 +32,7 @@ export function Header() {
             component="img"
             src="/logo.svg"
             alt="Algraph logo"
-            sx={{ width: 120, height: "auto" }}
+            sx={{ width: 120, height: "auto", margin: 1 }}
           />
         </Box>
         <Stack direction="row" spacing={1}>

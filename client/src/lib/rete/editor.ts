@@ -18,7 +18,10 @@ import {
   StepperControl,
   StepperControlComponent,
 } from "./controls";
-import { ThemedNodeComponent } from "./customization";
+import {
+  ThemedConnectionComponent,
+  ThemedNodeComponent,
+} from "./customization";
 import {
   ActionNode,
   IndicatorNode,
@@ -64,9 +67,9 @@ export async function createEditor(container: HTMLElement) {
         node() {
           return ThemedNodeComponent;
         },
-        // socket() {
-        //   return ThemedSocketComponent;
-        // },
+        connection() {
+          return ThemedConnectionComponent;
+        },
         control(data) {
           if (data.payload instanceof SelectControl) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -256,9 +259,7 @@ async function setupDefaultStrategy(
     ),
   );
   await editor.addConnection(
-    asSchemeConnection(
-      new Connection(deadCross, "true", longExit, "trigger"),
-    ),
+    asSchemeConnection(new Connection(deadCross, "true", longExit, "trigger")),
   );
 
   await AreaExtensions.zoomAt(
