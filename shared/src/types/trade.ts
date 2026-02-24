@@ -34,7 +34,7 @@ export const Timeframe = z.enum([
   "30min",
   "1h",
   "4h",
-  "1d",
+  "1day",
 ]);
 
 export type Timeframe = z.infer<typeof Timeframe>;
