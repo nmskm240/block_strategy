@@ -47,11 +47,6 @@ export function DateRangePicker({
         sx={{
           justifyContent: "flex-start",
           borderRadius: 1,
-          color: "#f5f7fb",
-          borderColor: "rgba(255,255,255,0.18)",
-          "&:hover": {
-            borderColor: "rgba(255,255,255,0.28)",
-          },
         }}
       >
         {summaryLabel}
@@ -98,7 +93,15 @@ export function DateRangePicker({
               }
             }}
           />
-          <Box sx={{ px: 1, pb: 0.5, pt: 0.25, fontSize: 12, color: "#566275" }}>
+          <Box
+            sx={{
+              px: 1,
+              pb: 0.5,
+              pt: 0.25,
+              fontSize: 12,
+              color: "text.disabled",
+            }}
+          >
             {getBacktestRangeLimitLabel(timeframe)}
           </Box>
         </Box>

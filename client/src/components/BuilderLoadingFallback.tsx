@@ -1,5 +1,6 @@
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { useEffect, useState } from "react";
+import { appPaletteCustom } from "@/theme";
 
 export function BuilderLoadingFallback() {
   const [loadingAnimationData, setLoadingAnimationData] = useState<string | null>(
@@ -29,7 +30,7 @@ export function BuilderLoadingFallback() {
         height: "94.5dvh",
         display: "grid",
         placeItems: "center",
-        background: "rgba(255, 255, 255, 0.7)",
+        background: appPaletteCustom.overlay.loadingBackdrop,
       }}
     >
       {loadingAnimationData ? (
@@ -40,7 +41,9 @@ export function BuilderLoadingFallback() {
           style={{ width: 220, height: 220 }}
         />
       ) : (
-        <div style={{ fontSize: 14, color: "#666" }}>Loading...</div>
+        <div style={{ fontSize: 14, color: appPaletteCustom.overlay.loadingText }}>
+          Loading...
+        </div>
       )}
     </div>
   );

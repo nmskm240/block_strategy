@@ -8,6 +8,7 @@ import {
   YAxis,
 } from "recharts";
 import type { Trade } from "shared";
+import { appPaletteCustom } from "@/theme";
 
 type EquityCurveChartProps = {
   trades: Trade[];
@@ -53,7 +54,7 @@ export function EquityCurveChart({ trades, equityCurve }: EquityCurveChartProps)
           height: 220,
           display: "grid",
           placeItems: "center",
-          color: "#94a3b8",
+          color: appPaletteCustom.chart.axisText,
           fontSize: 12,
         }}
       >
@@ -66,16 +67,16 @@ export function EquityCurveChart({ trades, equityCurve }: EquityCurveChartProps)
     <div style={{ width: "100%", height: 220 }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 12, right: 12, bottom: 4, left: 4 }}>
-          <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
+          <CartesianGrid stroke={appPaletteCustom.chart.grid} vertical={false} />
           <XAxis
             dataKey="index"
-            tick={{ fill: "#94a3b8", fontSize: 11 }}
+            tick={{ fill: appPaletteCustom.chart.axisText, fontSize: 11 }}
             tickLine={false}
-            axisLine={{ stroke: "rgba(255,255,255,0.16)" }}
+            axisLine={{ stroke: appPaletteCustom.chart.axisLine }}
             tickFormatter={(value) => `${Number(value) + 1}`}
           />
           <YAxis
-            tick={{ fill: "#94a3b8", fontSize: 11 }}
+            tick={{ fill: appPaletteCustom.chart.axisText, fontSize: 11 }}
             tickLine={false}
             axisLine={false}
             width={64}
@@ -85,12 +86,12 @@ export function EquityCurveChart({ trades, equityCurve }: EquityCurveChartProps)
           />
           <Tooltip
             contentStyle={{
-              background: "#101722",
-              border: "1px solid rgba(255,255,255,0.12)",
+              background: appPaletteCustom.chart.tooltipBg,
+              border: appPaletteCustom.chart.tooltipBorder,
               borderRadius: 8,
-              color: "#e2e8f0",
+              color: appPaletteCustom.chart.tooltipText,
             }}
-            labelStyle={{ color: "#94a3b8" }}
+            labelStyle={{ color: appPaletteCustom.chart.axisText }}
             formatter={(value: number | undefined) => [
               Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 }),
               "Equity",
@@ -103,10 +104,14 @@ export function EquityCurveChart({ trades, equityCurve }: EquityCurveChartProps)
           <Line
             type="monotone"
             dataKey="value"
-            stroke="#4da3ff"
+            stroke={appPaletteCustom.chart.line}
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 3, fill: "#4da3ff", stroke: "#dbeafe" }}
+            activeDot={{
+              r: 3,
+              fill: appPaletteCustom.chart.line,
+              stroke: appPaletteCustom.chart.activeDotStroke,
+            }}
           />
         </LineChart>
       </ResponsiveContainer>

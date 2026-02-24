@@ -19,6 +19,7 @@ export function BacktestResultsPanel({ backtests }: Props) {
 
   return (
     <Paper
+      variant="outlined"
       elevation={0}
       sx={{
         width: "100%",

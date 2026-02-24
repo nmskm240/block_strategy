@@ -15,6 +15,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
+import type { SxProps, Theme } from "@mui/material/styles";
 import { useEffect, useState, type PointerEvent } from "react";
 import { BacktestResult, SUPPORTED_SYMBOLS, Timeframe } from "shared";
 
@@ -28,6 +29,16 @@ type Props = {
 
 const BACKTEST_RUN_ERROR_MESSAGE =
   "バックテストに失敗しました。時間を置いて再度実行してください。";
+
+const dialogSelectSx: SxProps<Theme> = {
+  color: "text.primary",
+};
+
+const dialogMenuPaperSx: SxProps<Theme> = (theme) => ({
+  bgcolor: theme.palette.custom.surface.subtle,
+  color: theme.palette.text.primary,
+  border: `1px solid ${theme.palette.custom.border.subtle}`,
+});
 
 export function BacktestRunDialog({
   open,
@@ -64,11 +75,6 @@ export function BacktestRunDialog({
           onPointerDown: (event: PointerEvent) => event.stopPropagation(),
           sx: {
             position: "relative",
-            bgcolor: "#111724",
-            color: "#e7edf8",
-            border: "1px solid rgba(255, 255, 255, 0.16)",
-            borderRadius: 1.5,
-            boxShadow: "0 16px 40px rgba(0, 0, 0, 0.45)",
           },
         },
         backdrop: {
@@ -81,12 +87,7 @@ export function BacktestRunDialog({
       </DialogTitle>
       <DialogContent sx={{ display: "grid", gap: 1.25, pt: "8px !important" }}>
         <FormControl fullWidth size="small">
-          <InputLabel
-            id="backtest-symbol-label"
-            sx={{ color: "rgba(255,255,255,0.8)" }}
-          >
-            銘柄
-          </InputLabel>
+          <InputLabel id="backtest-symbol-label">銘柄</InputLabel>
           <Select
             labelId="backtest-symbol-label"
             id="backtest-symbol"
@@ -96,22 +97,10 @@ export function BacktestRunDialog({
             disabled={viewModel.isRunning}
             MenuProps={{
               PaperProps: {
-                sx: { bgcolor: "#101722", color: "#f5f7fb" },
+                sx: dialogMenuPaperSx,
               },
             }}
-            sx={{
-              color: "#f5f7fb",
-              ".MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(255,255,255,0.18)",
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(255,255,255,0.28)",
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#90caf9",
-              },
-              ".MuiSvgIcon-root": { color: "#f5f7fb" },
-            }}
+            sx={dialogSelectSx}
           >
             {SUPPORTED_SYMBOLS.map((item) => (
               <MenuItem key={item} value={item}>
@@ -122,12 +111,7 @@ export function BacktestRunDialog({
         </FormControl>
 
         <FormControl fullWidth size="small">
-          <InputLabel
-            id="backtest-timeframe-label"
-            sx={{ color: "rgba(255,255,255,0.8)" }}
-          >
-            タイムフレーム
-          </InputLabel>
+          <InputLabel id="backtest-timeframe-label">タイムフレーム</InputLabel>
           <Select
             labelId="backtest-timeframe-label"
             id="backtest-timeframe"
@@ -139,22 +123,10 @@ export function BacktestRunDialog({
             disabled={viewModel.isRunning}
             MenuProps={{
               PaperProps: {
-                sx: { bgcolor: "#101722", color: "#f5f7fb" },
+                sx: dialogMenuPaperSx,
               },
             }}
-            sx={{
-              color: "#f5f7fb",
-              ".MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(255,255,255,0.18)",
-              },
-              "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "rgba(255,255,255,0.28)",
-              },
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#90caf9",
-              },
-              ".MuiSvgIcon-root": { color: "#f5f7fb" },
-            }}
+            sx={dialogSelectSx}
           >
             {Timeframe.options
               .filter((item) => item !== "1min" && item !== "5min")
@@ -179,22 +151,13 @@ export function BacktestRunDialog({
             onChange={viewModel.setRange}
           />
           {viewModel.rangeError ? (
-            <Box sx={{ mt: 0.75, fontSize: 12, color: "#ff8a80" }}>
+            <Box sx={{ mt: 0.75, fontSize: 12, color: "error.light" }}>
               {viewModel.rangeError}
             </Box>
           ) : null}
         </Box>
         {runErrorMessage ? (
-          <Alert
-            severity="error"
-            variant="outlined"
-            sx={{
-              bgcolor: "rgba(211, 47, 47, 0.08)",
-              color: "#ffd7d7",
-              borderColor: "rgba(244, 67, 54, 0.35)",
-              ".MuiAlert-icon": { color: "#ff8a80" },
-            }}
-          >
+          <Alert severity="error" variant="outlined">
             {runErrorMessage}
           </Alert>
         ) : null}
@@ -228,16 +191,16 @@ export function BacktestRunDialog({
             void viewModel.onRunBacktest();
           }}
           disabled={!viewModel.canRunBacktest}
-          sx={{
-            bgcolor: "#3a4aa8",
-            border: "1px solid #2c387f",
-            "&:hover": { bgcolor: "#4658bf" },
+          sx={(theme) => ({
+            bgcolor: theme.palette.custom.action.primaryButtonBg,
+            border: `1px solid ${theme.palette.custom.action.primaryButtonBorder}`,
+            "&:hover": { bgcolor: theme.palette.custom.action.primaryButtonHoverBg },
             "&.Mui-disabled": {
               bgcolor: "rgba(58, 74, 168, 0.4)",
               color: "rgba(255,255,255,0.45)",
               borderColor: "rgba(44,56,127,0.4)",
             },
-          }}
+          })}
         >
           {viewModel.isRunning ? (
             <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}>

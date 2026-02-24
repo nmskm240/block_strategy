@@ -9,15 +9,16 @@ import { ChevronDownIcon } from "lucide-react";
 import type { Trade } from "shared";
 
 export function BacktestTradeListItem(trade: Trade) {
-  const profitColor = trade.profit >= 0 ? "#8ee4b1" : "#ffb3b3";
+  const isProfit = trade.profit >= 0;
 
   return (
     <Accordion
+      variant="outlined"
       disableGutters
       elevation={0}
       sx={{
         borderRadius: 0.5,
-        border: "1px solid rgba(255,255,255,0.06)",
+        bgcolor: "background.paper",
         "&:before": { display: "none" },
       }}
     >
@@ -39,12 +40,12 @@ export function BacktestTradeListItem(trade: Trade) {
         <Typography
           variant="caption"
           sx={{
-            color: trade.direction === "long" ? "#8ee4b1" : "#ffb3b3",
+            color: trade.direction === "long" ? "success.light" : "error.light",
           }}
         >
           {trade.direction}
         </Typography>
-        <Typography sx={{ color: profitColor }}>
+        <Typography sx={{ color: isProfit ? "success.light" : "error.light" }}>
           {trade.profit.toFixed(2)} USD ({trade.profitPct.toFixed(2)}%)
         </Typography>
       </AccordionSummary>

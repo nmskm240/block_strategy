@@ -24,15 +24,15 @@ export function BacktestRunButton({
         data-tour="backtest-run-button"
         onClick={() => setIsModalOpen(true)}
         onPointerDown={(event) => event.stopPropagation()}
-        sx={{
+        sx={(theme) => ({
           position: "absolute",
           right: 16,
           bottom: 16,
           zIndex: 10,
-          bgcolor: "#3a4aa8",
+          bgcolor: theme.palette.custom.action.fabBg,
           color: "#fff",
-          "&:hover": { bgcolor: "#4658bf" },
-        }}
+          "&:hover": { bgcolor: theme.palette.custom.action.fabHoverBg },
+        })}
       >
         <Play />
       </Fab>

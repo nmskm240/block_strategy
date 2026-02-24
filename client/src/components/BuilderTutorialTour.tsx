@@ -6,6 +6,7 @@ import Joyride, {
   type CallBackProps,
   type Step,
 } from "react-joyride";
+import { appPaletteCustom } from "@/theme";
 
 type BuilderTutorialTourProps = {
   run: boolean;
@@ -89,7 +90,7 @@ export function BuilderTutorialTour({ run, onStop }: BuilderTutorialTourProps) {
       styles={{
         options: {
           zIndex: 20000,
-          primaryColor: "#1a73e8",
+          primaryColor: appPaletteCustom.overlay.tourPrimary,
         },
       }}
     />

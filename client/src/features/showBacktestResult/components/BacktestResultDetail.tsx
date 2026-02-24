@@ -47,6 +47,7 @@ export function BacktestResultDetail({ result }: Props) {
   return (
     <>
       <Paper
+        variant="outlined"
         elevation={0}
         sx={{
           padding: 1.5,
@@ -61,6 +62,7 @@ export function BacktestResultDetail({ result }: Props) {
         />
       </Paper>
       <Paper
+        variant="outlined"
         elevation={0}
         sx={{
           padding: 1.5,
