@@ -16,8 +16,8 @@ export function FeaturesSection() {
       <Container maxWidth="lg" sx={{ py: { xs: 8, md: 11 } }}>
         <SectionHeading
           eyebrow="Features"
-          title="戦略検証に必要な機能を、分かりやすく整理"
-          body="参考LPのようなカード型の情報整理を採用し、読み進めるだけでプロダクトの使いどころが伝わる構成にしています。"
+          title="戦略検証に必要な機能を"
+          body="戦略の構築から検証、改善までをシームレスに行えるよう、必要な機能を揃えています。"
         />
         <Box
           sx={{

@@ -1,6 +1,5 @@
 import { Link as RouterLink } from "react-router-dom";
 import { Box, Button, Chip, Container, Stack, Typography } from "@mui/material";
-import { HeroNodePreview } from "@/pages/landing/HeroNodePreview";
 
 export function HeroSection() {
   return (
@@ -154,13 +153,13 @@ export function HeroSection() {
                 pointerEvents: "none",
               }}
             >
-              <HeroNodePreview
-                framed={false}
-                showLabel={false}
-                height={640}
+              <Box
                 sx={{
+                  borderColor: "divider",
+                  bgcolor: "transparent",
+                  position: "relative",
+                  height: 640,
                   width: "100%",
-                  height: "100%",
                   opacity: 0.97,
                   filter: "drop-shadow(0 44px 56px rgba(0,0,0,0.24))",
                   transform: {
@@ -169,7 +168,20 @@ export function HeroSection() {
                   },
                   transformOrigin: "center center",
                 }}
-              />
+              >
+                <Box
+                  component="img"
+                  src="/hero-editor-preview.webp"
+                  alt="Algraph node editor preview"
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                    objectPosition: "center top",
+                    display: "block",
+                  }}
+                />
+              </Box>
             </Box>
           </Box>
         </Stack>
