@@ -1,6 +1,10 @@
 import { useBacktestRunner } from "@/hooks/useBacktestRunner";
 import type { EditorHandle } from "@/lib/rete";
 import { useState } from "react";
+import {
+  getDateRangeLimitError,
+  normalizeDateRange,
+} from "../dateRangeLimit";
 import type {
   BacktestResult,
   DateRange,
@@ -21,13 +25,23 @@ export function useBacktestRunDialogViewModel({
 }: Props) {
   const [symbol, setSymbol] = useState<SupportedSymbol>("AAPL");
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
-  const [range, setRange] = useState<DateRange>({
+  const [range, setRangeState] = useState<DateRange>({
     since: new Date("2020-01-01"),
     until: new Date("2023-12-31"),
   });
   const runner = useBacktestRunner();
 
+  function setRange(nextRange: DateRange) {
+    setRangeState(normalizeDateRange(nextRange));
+  }
+
+  const rangeError = getDateRangeLimitError(range, timeframe);
+  const canRunBacktest = rangeError === null;
+
   async function onRunBacktest() {
+    if (!canRunBacktest) {
+      return;
+    }
     const graph = editorHandle.getGraph();
     try {
       const result = await runner.run(graph, {
@@ -46,6 +60,8 @@ export function useBacktestRunDialogViewModel({
     symbol,
     timeframe,
     range,
+    rangeError,
+    canRunBacktest,
     setSymbol,
     setTimeframe,
     setRange,

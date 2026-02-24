@@ -1,18 +1,27 @@
+import {
+  getBacktestRangeLimitLabel,
+  normalizeDateRange,
+} from "@/features/runBacktest/dateRangeLimit";
 import { Box, Button, Popover } from "@mui/material";
 import { useMemo, useState } from "react";
 import {
   DayPicker,
   type DateRange as DayPickerDateRange,
 } from "react-day-picker";
-import type { DateRange } from "shared";
+import type { DateRange, Timeframe } from "shared";
 import "react-day-picker/dist/style.css";
 
 type DateRangePickerProps = {
   value: DateRange;
+  timeframe: Timeframe;
   onChange: (value: DateRange) => void;
 };
 
-export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
+export function DateRangePicker({
+  value,
+  timeframe,
+  onChange,
+}: DateRangePickerProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const selectedRange = useMemo<DayPickerDateRange>(() => {
@@ -85,10 +94,13 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
                   59,
                   59,
                 );
-                onChange({ since, until });
+                onChange(normalizeDateRange({ since, until }));
               }
             }}
           />
+          <Box sx={{ px: 1, pb: 0.5, pt: 0.25, fontSize: 12, color: "#566275" }}>
+            {getBacktestRangeLimitLabel(timeframe)}
+          </Box>
         </Box>
       </Popover>
     </>

@@ -156,8 +156,14 @@ export function BacktestRunDialog({
           </Box>
           <DateRangePicker
             value={viewModel.range}
+            timeframe={viewModel.timeframe}
             onChange={viewModel.setRange}
           />
+          {viewModel.rangeError ? (
+            <Box sx={{ mt: 0.75, fontSize: 12, color: "#ff8a80" }}>
+              {viewModel.rangeError}
+            </Box>
+          ) : null}
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 0.5, gap: 1 }}>
@@ -181,10 +187,16 @@ export function BacktestRunDialog({
           type="button"
           variant="contained"
           onClick={viewModel.onRunBacktest}
+          disabled={!viewModel.canRunBacktest}
           sx={{
             bgcolor: "#3a4aa8",
             border: "1px solid #2c387f",
             "&:hover": { bgcolor: "#4658bf" },
+            "&.Mui-disabled": {
+              bgcolor: "rgba(58, 74, 168, 0.4)",
+              color: "rgba(255,255,255,0.45)",
+              borderColor: "rgba(44,56,127,0.4)",
+            },
           }}
         >
           実行
