@@ -8,7 +8,42 @@ type Props = {
   result?: BacktestResult;
 };
 
+const ANALYSIS_LABELS: Partial<Record<keyof BacktestResult["analysis"], string>> = {
+  startingCapital: "Starting Capital",
+  finalCapital: "Final Capital",
+  profit: "Total Net Profit",
+  profitPct: "Profit %",
+  growth: "Growth",
+  totalTrades: "Total Number of Trades",
+  maxDrawdown: "Max Drawdown",
+  maxDrawdownPct: "Max Drawdown %",
+  maxRiskPct: "Max Risk %",
+  expectency: "Expectancy",
+  rmultipleStdDev: "R-Multiple Std Dev",
+  systemQuality: "System Quality",
+  profitFactor: "Profit Factor",
+  numWinningTrades: "Winning Trades",
+  numLosingTrades: "Losing Trades",
+  averageWinningTrade: "Average Winning Trade",
+  averageLosingTrade: "Average Losing Trade",
+};
+
+const ANALYSIS_KEYS = Object.keys(
+  ANALYSIS_LABELS,
+) as Array<keyof BacktestResult["analysis"]>;
+
+function formatAnalysisValue(value: number | undefined, key: string) {
+  if (value == null) return "-";
+  if (key.toLowerCase().endsWith("pct")) return `${value.toFixed(2)}%`;
+  return Number.isInteger(value) ? value : value.toFixed(2);
+}
+
 export function BacktestResultDetail({ result }: Props) {
+  const analysisRows = ANALYSIS_KEYS.map((key) => ({
+    label: ANALYSIS_LABELS[key] ?? key,
+    value: formatAnalysisValue(result?.analysis[key], key),
+  }));
+
   return (
     <>
       <Paper
@@ -19,23 +54,7 @@ export function BacktestResultDetail({ result }: Props) {
       >
         <Typography variant="h6">Detail</Typography>
         <Divider />
-        <SummaryTable
-          rows={[
-            {
-              label: "Average Losing Trade",
-              value: result?.analysis.averageLosingTrade ?? 0,
-            },
-            {
-              label: "Average Winning Trade",
-              value: result?.analysis.averageWinningTrade ?? 0,
-            },
-            { label: "Expectency", value: result?.analysis.expectency ?? 0 },
-            {
-              label: "Profit Factor",
-              value: result?.analysis.profitFactor ?? 0,
-            },
-          ]}
-        />
+        <SummaryTable rows={analysisRows} />
         <EquityCurveChart
           trades={result?.trades ?? []}
           equityCurve={result?.equityCurve ?? []}
