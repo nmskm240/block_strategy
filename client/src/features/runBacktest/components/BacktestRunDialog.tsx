@@ -2,6 +2,7 @@ import { DateRangePicker } from "@/components/DateRangePicker";
 import { useBacktestRunDialogViewModel } from "@/features/runBacktest/hooks/useBacktestRunDialogViewModel";
 import type { EditorHandle } from "@/lib/rete";
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
@@ -14,7 +15,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { type PointerEvent } from "react";
+import { useEffect, useState, type PointerEvent } from "react";
 import { BacktestResult, SUPPORTED_SYMBOLS, Timeframe } from "shared";
 
 type Props = {
@@ -25,6 +26,9 @@ type Props = {
   onRunError: (message: string) => void;
 };
 
+const BACKTEST_RUN_ERROR_MESSAGE =
+  "バックテストに失敗しました。時間を置いて再度実行してください。";
+
 export function BacktestRunDialog({
   open,
   editorHandle,
@@ -32,11 +36,21 @@ export function BacktestRunDialog({
   onRunSuccess,
   onRunError,
 }: Props) {
+  const [runErrorMessage, setRunErrorMessage] = useState<string | null>(null);
   const viewModel = useBacktestRunDialogViewModel({
     editorHandle,
     onRunSuccess,
-    onRunError,
+    onRunError: (message) => {
+      setRunErrorMessage(BACKTEST_RUN_ERROR_MESSAGE);
+      onRunError(message);
+    },
   });
+
+  useEffect(() => {
+    if (open) {
+      setRunErrorMessage(null);
+    }
+  }, [open]);
 
   return (
     <Dialog
@@ -170,12 +184,29 @@ export function BacktestRunDialog({
             </Box>
           ) : null}
         </Box>
+        {runErrorMessage ? (
+          <Alert
+            severity="error"
+            variant="outlined"
+            sx={{
+              bgcolor: "rgba(211, 47, 47, 0.08)",
+              color: "#ffd7d7",
+              borderColor: "rgba(244, 67, 54, 0.35)",
+              ".MuiAlert-icon": { color: "#ff8a80" },
+            }}
+          >
+            {runErrorMessage}
+          </Alert>
+        ) : null}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2, pt: 0.5, gap: 1 }}>
         <Button
           type="button"
           variant="outlined"
-          onClick={onClose}
+          onClick={() => {
+            setRunErrorMessage(null);
+            onClose();
+          }}
           disabled={viewModel.isRunning}
           sx={{
             color: "#fff",
@@ -192,7 +223,10 @@ export function BacktestRunDialog({
         <Button
           type="button"
           variant="contained"
-          onClick={viewModel.onRunBacktest}
+          onClick={() => {
+            setRunErrorMessage(null);
+            void viewModel.onRunBacktest();
+          }}
           disabled={!viewModel.canRunBacktest}
           sx={{
             bgcolor: "#3a4aa8",
