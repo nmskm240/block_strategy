@@ -51,6 +51,12 @@ export async function createEditor(container: HTMLElement) {
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
     accumulating: AreaExtensions.accumulateOnCtrl(),
   });
+  AreaExtensions.restrictor(area, {
+    scaling: {
+      min: 0.5,
+      max: 1.5,
+    },
+  });
 
   render.addPreset(
     Presets.classic.setup({
