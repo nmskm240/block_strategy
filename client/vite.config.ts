@@ -7,6 +7,31 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) {
+            return undefined;
+          }
+
+          if (id.includes("/recharts/")) {
+            return "charts";
+          }
+
+          if (
+            id.includes("/rete/") ||
+            id.includes("/rete-") ||
+            id.includes("/rete-kit/")
+          ) {
+            return "rete";
+          }
+
+          return undefined;
+        },
+      },
+    },
+  },
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
