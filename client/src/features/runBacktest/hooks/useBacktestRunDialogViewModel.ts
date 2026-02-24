@@ -24,7 +24,7 @@ export function useBacktestRunDialogViewModel({
   onRunError,
 }: Props) {
   const [symbol, setSymbol] = useState<SupportedSymbol>("AAPL");
-  const [timeframe, setTimeframe] = useState<Timeframe>("1h");
+  const [timeframe, setTimeframe] = useState<Timeframe>("1day");
   const [range, setRangeState] = useState<DateRange>({
     since: new Date("2020-01-01"),
     until: new Date("2023-12-31"),
