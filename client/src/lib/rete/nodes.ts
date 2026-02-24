@@ -39,12 +39,35 @@ export abstract class NodeBase extends ClassicPreset.Node<
 }
 
 export class ActionNode extends NodeBase {
-  readonly kind: ActionKind = "marketEntry";
+  private syncControlsByMode(mode: ActionKind) {
+    const isExit = mode === "marketExit";
+    const sideControl = this.controls.side as SelectControl | undefined;
+    const sizeControl = this.controls.size as LabeledInputControl<"number"> | undefined;
+    if (sideControl) {
+      sideControl.hidden = isExit;
+    }
+    if (sizeControl) {
+      sizeControl.hidden = isExit;
+    }
+  }
 
   constructor() {
     super("Action");
 
     this.addInput("trigger", new ClassicPreset.Input(socket, "trigger"));
+    this.addControl(
+      "mode",
+      new SelectControl({
+        options: [
+          { label: "Entry", value: "marketEntry" },
+          { label: "Exit", value: "marketExit" },
+        ],
+        initial: "marketEntry",
+        change: (value) => {
+          this.syncControlsByMode(value as ActionKind);
+        },
+      }),
+    );
     this.addControl(
       "side",
       new SelectControl({
@@ -59,17 +82,38 @@ export class ActionNode extends NodeBase {
       "size",
       new LabeledInputControl("number", { label: "size", initial: 1 }),
     );
+
+    this.syncControlsByMode("marketEntry");
   }
 
   toGraphNode(): GraphNode {
+    const actionType = getSelectControlValue(
+      this.controls.mode,
+      "marketEntry",
+    ) as ActionKind;
+    const size = getNumberControlValue(this.controls.size, 1);
+
+    if (actionType === "marketExit") {
+      return {
+        id: String(this.id),
+        spec: {
+          kind: NodeKind.ACTION,
+          actionType,
+          params: {
+            size,
+          },
+        },
+      };
+    }
+
     return {
       id: String(this.id),
       spec: {
         kind: NodeKind.ACTION,
-        actionType: this.kind,
+        actionType,
         params: {
           side: getSelectControlValue(this.controls.side, "BUY"),
-          size: getNumberControlValue(this.controls.size, 1),
+          size,
         },
       },
     };

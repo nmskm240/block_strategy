@@ -11,12 +11,14 @@ export type SelectControlOptions = {
   options: SelectOption[];
   initial?: string;
   readonly?: boolean;
+  hidden?: boolean;
   change?: (value: string) => void;
 };
 
 export class SelectControl extends ClassicPreset.Control {
   value: string;
   readonly: boolean;
+  hidden: boolean;
   options: SelectOption[];
   initial?: string;
   private onChange?: (value: string) => void;
@@ -29,6 +31,7 @@ export class SelectControl extends ClassicPreset.Control {
     super();
     this.options = options.options;
     this.readonly = options.readonly ?? false;
+    this.hidden = options.hidden ?? false;
     this.initial = options.initial;
     this.onChange = options.change;
     this.value = options.initial ?? this.options[0].value;
@@ -53,6 +56,10 @@ export function SelectControlComponent(props: { data: SelectControl }) {
   useEffect(() => {
     setValue(data.value);
   }, [data.value]);
+
+  if (data.hidden) {
+    return null;
+  }
 
   return (
     <select

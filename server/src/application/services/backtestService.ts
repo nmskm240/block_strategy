@@ -42,6 +42,10 @@ export class BacktestService {
     );
     const sourceDf = new DataFrame<number, OHLCV>(ohlcvs);
     const withSignals = compileSignals(graph, sourceDf);
+    console.log(
+      "Compiled strategy with signals:",
+      withSignals.filter((bar) => bar.entrySignal || bar.exitSignal).toArray(),
+    );
     const trades = backtest(StrategyTemplate, withSignals);
     const analysis = analyze(environment.cash, trades);
     const equityCurve = computeEquityCurve(environment.cash, trades);

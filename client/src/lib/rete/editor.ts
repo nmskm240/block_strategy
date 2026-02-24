@@ -181,7 +181,7 @@ async function setupDefaultStrategy(
   const goldenCross = new LogicalNode(ConditionOperators.GREATER_THAN);
   const deadCross = new LogicalNode(ConditionOperators.LESS_THAN);
   const longEntry = new ActionNode();
-  const shortEntry = new ActionNode();
+  const longExit = new ActionNode();
 
   (close.controls.kind as SelectControl).setValue("CLOSE");
   (sma20.controls.period as LabeledInputControl<"number">).setValue(20);
@@ -191,11 +191,11 @@ async function setupDefaultStrategy(
   await editor.addNode(sma20);
   await editor.addNode(sma50);
   await editor.addNode(goldenCross);
-  (shortEntry.controls.side as SelectControl).setValue("SELL");
+  (longExit.controls.mode as SelectControl).setValue("marketExit");
 
   await editor.addNode(longEntry);
   await editor.addNode(deadCross);
-  await editor.addNode(shortEntry);
+  await editor.addNode(longExit);
 
   await area.translate(close.id, { x: 80, y: 180 });
   await area.translate(sma20.id, { x: 300, y: 90 });
@@ -203,7 +203,7 @@ async function setupDefaultStrategy(
   await area.translate(goldenCross.id, { x: 560, y: 120 });
   await area.translate(longEntry.id, { x: 800, y: 120 });
   await area.translate(deadCross.id, { x: 560, y: 300 });
-  await area.translate(shortEntry.id, { x: 800, y: 300 });
+  await area.translate(longExit.id, { x: 800, y: 300 });
 
   const asSchemeConnection = <A extends NodeBase, B extends NodeBase>(
     connection: Connection<A, B>,
@@ -234,13 +234,13 @@ async function setupDefaultStrategy(
   );
   await editor.addConnection(
     asSchemeConnection(
-      new Connection(deadCross, "true", shortEntry, "trigger"),
+      new Connection(deadCross, "true", longExit, "trigger"),
     ),
   );
 
   await AreaExtensions.zoomAt(
     area,
-    [close, sma20, sma50, goldenCross, longEntry, deadCross, shortEntry],
+    [close, sma20, sma50, goldenCross, longEntry, deadCross, longExit],
     { scale: 0.9 },
   );
 }

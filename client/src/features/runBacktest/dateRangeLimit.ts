@@ -41,7 +41,7 @@ export function getMaxBacktestRangeDays(timeframe: Timeframe): number {
 
 export function getBacktestRangeLimitLabel(timeframe: Timeframe): string {
   switch (timeframe) {
-    case "1d":
+    case "1day":
       return "最大10年";
     case "1h":
     case "4h":

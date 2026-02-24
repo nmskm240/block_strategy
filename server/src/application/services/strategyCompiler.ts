@@ -62,17 +62,36 @@ function asNumericSeries(
   return source as NumericSeries;
 }
 
-function getActionKind(spec: ActionNode["spec"]): "ENTRY" | "EXIT" {
-  const maybeKind = (spec as { kind?: unknown }).kind;
-  if (maybeKind === "ENTRY" || maybeKind === "EXIT") {
-    return maybeKind;
+function isEntryActionSpec(spec: ActionNode["spec"]): boolean {
+  const actionType = (spec as { actionType?: unknown }).actionType;
+  if (actionType === "marketEntry") {
+    return true;
   }
-  return (spec as { actionType?: string }).actionType === "marketEntry"
-    ? "ENTRY"
-    : "EXIT";
+  if (actionType === "marketExit") {
+    return false;
+  }
+  // Legacy fallback.
+  const maybeKind = (spec as { kind?: unknown }).kind;
+  return maybeKind === "ENTRY";
 }
 
-function getActionDirection(spec: ActionNode["spec"]): "LONG" | "SHORT" {
+function isExitActionSpec(spec: ActionNode["spec"]): boolean {
+  const actionType = (spec as { actionType?: unknown }).actionType;
+  if (actionType === "marketExit") {
+    return true;
+  }
+  if (actionType === "marketEntry") {
+    return false;
+  }
+  // Legacy fallback.
+  const maybeKind = (spec as { kind?: unknown }).kind;
+  return maybeKind === "EXIT";
+}
+
+function getEntryActionDirection(spec: ActionNode["spec"]): "LONG" | "SHORT" {
+  if (!isEntryActionSpec(spec)) {
+    throw new Error("Expected marketEntry action for entry direction");
+  }
   const maybeDirection = (spec as { direction?: unknown }).direction;
   if (maybeDirection === "LONG" || maybeDirection === "SHORT") {
     return maybeDirection;
@@ -447,10 +466,10 @@ export function compileSignals(
     (node): node is ActionNode => node instanceof ActionNode,
   );
   const entryActions = actions.filter(
-    (node) => getActionKind(node.spec) === "ENTRY",
+    (node) => isEntryActionSpec(node.spec),
   );
   const exitActions = actions.filter(
-    (node) => getActionKind(node.spec) === "EXIT",
+    (node) => isExitActionSpec(node.spec),
   );
 
   const rowCount = inputDf.count();
@@ -506,7 +525,7 @@ export function compileSignals(
       if (!trigger[i]) {
         continue;
       }
-      if (getActionDirection(action.spec) === "SHORT") {
+      if (getEntryActionDirection(action.spec) === "SHORT") {
         shortTriggered = true;
       } else {
         longTriggered = true;
