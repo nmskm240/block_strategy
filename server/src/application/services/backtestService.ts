@@ -4,7 +4,7 @@ import { analyze, backtest, computeEquityCurve, type IBar } from "grademark";
 import { TradeDirection, type IStrategy } from "grademark/build/lib/strategy";
 import type { BacktestEnvironment, BacktestResult, OHLCV } from "shared";
 import { compileSignals, type StrategySignalBar } from "./strategyCompiler";
-import { resampleOhlcvs, type IOhlcvRepository } from "@server/domain/ohlcv";
+import type { OhlcvFetcher } from "@server/application/ports/ohlcvFetcher";
 
 const StrategyTemplate: IStrategy<StrategySignalBar> = {
   entryRule: (enterPosition, args) => {
@@ -25,23 +25,22 @@ const StrategyTemplate: IStrategy<StrategySignalBar> = {
 };
 
 export class BacktestService {
-  private _repository: IOhlcvRepository;
+  private _ohlcvFetcher: OhlcvFetcher;
 
-  constructor(repository: IOhlcvRepository) {
-    this._repository = repository;
+  constructor(ohlcvFetcher: OhlcvFetcher) {
+    this._ohlcvFetcher = ohlcvFetcher;
   }
 
   async run(
     graph: StrategyGraph,
     environment: BacktestEnvironment,
   ): Promise<BacktestResult> {
-    const ohlcvs = await this._repository.getOhlcvs(
+    const ohlcvs = await this._ohlcvFetcher.fetchOhlcvs(
       environment.symbol,
+      environment.timeframe,
       environment.testRange,
     );
-    const sourceDf = new DataFrame<number, OHLCV>(
-      resampleOhlcvs(ohlcvs, environment.timeframe),
-    );
+    const sourceDf = new DataFrame<number, OHLCV>(ohlcvs);
     const withSignals = compileSignals(graph, sourceDf);
     const trades = backtest(StrategyTemplate, withSignals);
     const analysis = analyze(environment.cash, trades);

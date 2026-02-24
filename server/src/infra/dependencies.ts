@@ -1,5 +1,5 @@
 import { BacktestService } from "@server/application/services/backtestService";
-import { TwelveDataClient } from "@server/infra/externalApis";
+import { TwelveDataFetcher } from "@server/infra/externalApis";
 import { Dependency } from "hono-simple-di";
 import { DummyOhlcvRepository, R2CsvOhlcvRepository } from "./repositories";
 import type { WorkerBindings } from "./bindings";
@@ -20,17 +20,20 @@ export const ohlcvRepositoryDep = new Dependency((c) => {
 });
 
 export const backtestServiceDep = new Dependency(async (c) => {
-  const repository = await ohlcvRepositoryDep.resolve(c);
-  return new BacktestService(repository);
+  const twelveDataFetcher = await twelveDataFetcherDep.resolve(c);
+  if (!twelveDataFetcher) {
+    return null;
+  }
+  return new BacktestService(twelveDataFetcher);
 });
 
-export const twelveDataClientDep = new Dependency((c) => {
+export const twelveDataFetcherDep = new Dependency((c) => {
   const env = getBindings(c);
   if (!env.TWELVE_DATA_API_KEY) {
     return null;
   }
-  return new TwelveDataClient({
+  return new TwelveDataFetcher({
     apiKey: env.TWELVE_DATA_API_KEY,
-    baseUrl: "https://api.twelvedata.com",
+    baseUrl: env.TWELVE_DATA_BASE_URL ?? "https://api.twelvedata.com",
   });
 });

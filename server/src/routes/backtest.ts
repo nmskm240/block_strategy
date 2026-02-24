@@ -11,6 +11,9 @@ type BacktestRouteVariables = {
 export const backtestRoute = new Hono<{ Variables: BacktestRouteVariables }>()
   .use("*", backtestServiceDep.middleware("backtestService"))
   .post("/", async (c) => {
+    if (!c.var.backtestService) {
+      return c.json({ message: "TWELVE_DATA_API_KEY is not configured" }, { status: 500 });
+    }
     const rawBody = await c.req.json().catch(() => null);
     const request = BacktestRequestSchema.parse(rawBody);
     const result = await usecase.runBacktest(

@@ -1,10 +1,12 @@
 import {
   HttpClient,
+  HttpClientError,
   Timeframe,
   type DateRange,
   type OHLCV,
   type SupportedSymbol,
 } from "shared";
+import type { OhlcvFetcher } from "@server/application/ports/ohlcvFetcher";
 
 type TwelveDataTimeSeriesResponse = {
   status?: string;
@@ -19,16 +21,16 @@ type TwelveDataTimeSeriesResponse = {
   message?: string;
 };
 
-type TwelveDataClientOptions = {
+type TwelveDataFetcherOptions = {
   apiKey: string;
   baseUrl: string;
 };
 
-export class TwelveDataClient {
+export class TwelveDataFetcher implements OhlcvFetcher {
   private readonly apiKey: string;
   private readonly http: HttpClient;
 
-  constructor(options: TwelveDataClientOptions) {
+  constructor(options: TwelveDataFetcherOptions) {
     this.apiKey = options.apiKey;
     this.http = new HttpClient({
       baseUrl: options.baseUrl,
@@ -71,6 +73,15 @@ export class TwelveDataClient {
     const payload = (await this.http.get(
       `/time_series?${params.toString()}`,
     )) as TwelveDataTimeSeriesResponse;
+
+    if (payload?.status === "error") {
+      throw new HttpClientError(
+        payload.message ?? `TwelveData request failed for ${symbol}`,
+        502,
+        payload,
+        "/time_series",
+      );
+    }
 
     return (
       payload?.values
