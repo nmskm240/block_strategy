@@ -50,22 +50,9 @@ export function Header() {
                 "&:hover": { bgcolor: "primary.dark" },
               }}
             >
-              Builder を開く
+              戦略作成を始める
             </Button>
-          ) : (
-            <Button
-              component={RouterLink}
-              to="/"
-              size="small"
-              sx={{
-                textTransform: "none",
-                fontWeight: 700,
-                color: "inherit",
-              }}
-            >
-              LPへ戻る
-            </Button>
-          )}
+          ) : null}
         </Stack>
       </Stack>
     </AppBar>
