@@ -1,7 +1,7 @@
 import { BacktestResultDetail } from "@/features/showBacktestResult/components/BacktestResultDetail";
 import { BacktestResultSelector } from "@/features/showBacktestResult/components/BacktestResultSelector";
 import { Paper, Stack, Typography } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { BacktestResult } from "shared";
 
 type Props = {
@@ -10,6 +10,10 @@ type Props = {
 
 export function BacktestResultsPanel({ backtests }: Props) {
   const [selectedResult, setSelectedResult] = useState<BacktestResult | null>(null);
+
+  useEffect(() => {
+    setSelectedResult(backtests[0] ?? null);
+  }, [backtests]);
 
   return (
     <Paper
@@ -38,7 +42,7 @@ export function BacktestResultsPanel({ backtests }: Props) {
           selectedResult={selectedResult}
           onSelectResult={setSelectedResult}
         />
-        <BacktestResultDetail result={selectedResult!} />
+        {selectedResult ? <BacktestResultDetail result={selectedResult} /> : null}
       </Stack>
     </Paper>
   );

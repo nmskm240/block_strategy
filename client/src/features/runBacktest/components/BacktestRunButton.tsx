@@ -41,7 +41,10 @@ export function BacktestRunButton({
         open={isModalOpen}
         editorHandle={editorHandle}
         onClose={() => setIsModalOpen(false)}
-        onRunSuccess={onRunSuccess}
+        onRunSuccess={(item) => {
+          setIsModalOpen(false);
+          onRunSuccess(item);
+        }}
         onRunError={onRunError ?? (() => {})}
       />
     </>

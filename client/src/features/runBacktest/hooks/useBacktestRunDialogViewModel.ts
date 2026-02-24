@@ -36,7 +36,7 @@ export function useBacktestRunDialogViewModel({
   }
 
   const rangeError = getDateRangeLimitError(range, timeframe);
-  const canRunBacktest = rangeError === null;
+  const canRunBacktest = rangeError === null && !runner.isRunning;
 
   async function onRunBacktest() {
     if (!canRunBacktest) {
@@ -62,6 +62,7 @@ export function useBacktestRunDialogViewModel({
     range,
     rangeError,
     canRunBacktest,
+    isRunning: runner.isRunning,
     setSymbol,
     setTimeframe,
     setRange,

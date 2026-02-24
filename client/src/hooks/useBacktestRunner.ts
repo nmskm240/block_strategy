@@ -1,5 +1,5 @@
 import { BacktestApiClient } from "@/services/backtestClient";
-import { useRef } from "react";
+import { useMemo, useState } from "react";
 import type { BacktestEnvironment, BacktestResult, Graph } from "shared";
 
 type BacktestRunner = {
@@ -11,26 +11,26 @@ type BacktestRunner = {
 };
 
 export function useBacktestRunner(): BacktestRunner {
-  const isRunningRef = useRef(false);
-  const backtestClient = new BacktestApiClient();
+  const [isRunning, setIsRunning] = useState(false);
+  const backtestClient = useMemo(() => new BacktestApiClient(), []);
 
   async function run(graph: Graph, environment: BacktestEnvironment) {
-    if (isRunningRef.current) {
+    if (isRunning) {
       throw new Error("Backtest is already running");
     }
-    isRunningRef.current = true;
+    setIsRunning(true);
     try {
       return await backtestClient.runBacktest({
         graph,
         environment,
       });
     } finally {
-      isRunningRef.current = false;
+      setIsRunning(false);
     }
   }
 
   return {
-    isRunning: isRunningRef.current,
+    isRunning,
     run,
   };
 }

@@ -4,6 +4,7 @@ import type { EditorHandle } from "@/lib/rete";
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -40,10 +41,10 @@ export function BacktestRunDialog({
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={viewModel.isRunning ? undefined : onClose}
       maxWidth="xs"
       fullWidth
-      disableEscapeKeyDown={true}
+      disableEscapeKeyDown={viewModel.isRunning}
       slotProps={{
         paper: {
           onPointerDown: (event: PointerEvent) => event.stopPropagation(),
@@ -78,6 +79,7 @@ export function BacktestRunDialog({
             label="銘柄"
             value={viewModel.symbol}
             onChange={(event) => viewModel.setSymbol(event.target.value)}
+            disabled={viewModel.isRunning}
             MenuProps={{
               PaperProps: {
                 sx: { bgcolor: "#101722", color: "#f5f7fb" },
@@ -120,6 +122,7 @@ export function BacktestRunDialog({
             onChange={(event) =>
               viewModel.setTimeframe(event.target.value as Timeframe)
             }
+            disabled={viewModel.isRunning}
             MenuProps={{
               PaperProps: {
                 sx: { bgcolor: "#101722", color: "#f5f7fb" },
@@ -171,6 +174,7 @@ export function BacktestRunDialog({
           type="button"
           variant="outlined"
           onClick={onClose}
+          disabled={viewModel.isRunning}
           sx={{
             color: "#fff",
             borderColor: "rgba(255, 255, 255, 0.2)",
@@ -199,7 +203,14 @@ export function BacktestRunDialog({
             },
           }}
         >
-          実行
+          {viewModel.isRunning ? (
+            <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}>
+              <CircularProgress size={16} sx={{ color: "inherit" }} />
+              実行中...
+            </Box>
+          ) : (
+            "実行"
+          )}
         </Button>
       </DialogActions>
     </Dialog>
