@@ -142,11 +142,13 @@ export function BacktestRunDialog({
               ".MuiSvgIcon-root": { color: "#f5f7fb" },
             }}
           >
-            {Timeframe.options.map((item) => (
-              <MenuItem key={item} value={item}>
-                {item}
-              </MenuItem>
-            ))}
+            {Timeframe.options
+              .filter((item) => item !== "1min" && item !== "5min")
+              .map((item) => (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              ))}
           </Select>
         </FormControl>
 
