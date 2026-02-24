@@ -8,6 +8,8 @@ export const LogicalOperatorSchema = z.enum([
   "<=",
   ">",
   ">=",
+  "CROSSOVER",
+  "CROSSDOWN",
 ]);
 
 export const LogicalNodeSpecSchema = z

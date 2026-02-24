@@ -332,6 +332,28 @@ function compileLogicalNode(
         return leftValue > rightValue;
       case ">=":
         return leftValue >= rightValue;
+      case "CROSSOVER": {
+        if (index === 0) {
+          return false;
+        }
+        const prevLeft = left[index - 1];
+        const prevRight = right[index - 1];
+        if (prevLeft === undefined || prevRight === undefined) {
+          return false;
+        }
+        return prevLeft <= prevRight && leftValue > rightValue;
+      }
+      case "CROSSDOWN": {
+        if (index === 0) {
+          return false;
+        }
+        const prevLeft = left[index - 1];
+        const prevRight = right[index - 1];
+        if (prevLeft === undefined || prevRight === undefined) {
+          return false;
+        }
+        return prevLeft >= prevRight && leftValue < rightValue;
+      }
       default: {
         const unknown: never = spec.operator;
         throw new Error(`Unknown logical operator '${unknown}'`);
