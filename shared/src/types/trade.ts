@@ -12,11 +12,17 @@ export const OHLCVSchema = z.object({
 export type OHLCV = z.infer<typeof OHLCVSchema>;
 
 export const SupportedSymbolSchema = z.enum([
+  "EUR/USD",
+  "USD/JPY",
   "AAPL",
   "MSFT",
   "NVDA",
   "AMZN",
   "TSLA",
+  "SPY",
+  "XAU/USD",
+  "BTC/USD",
+  "ETH/USD",
 ]);
 
 export const SUPPORTED_SYMBOLS = SupportedSymbolSchema.options;
