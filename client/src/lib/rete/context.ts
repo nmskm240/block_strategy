@@ -2,7 +2,13 @@ import {
   ContextMenuPlugin,
   Presets as ContextMenuPresets,
 } from "rete-context-menu-plugin";
-import { IndicatorKind, IndicatorRegistry } from "shared";
+import {
+  BooleanLogicOperatorSchema,
+  IndicatorKind,
+  IndicatorRegistry,
+  LogicalOperatorSchema,
+  MathOperatorSchema,
+} from "shared";
 import {
   ActionNode,
   IndicatorNode,
@@ -11,12 +17,7 @@ import {
   MathNode,
   OHLCVNode,
 } from "./nodes";
-import {
-  ConditionOperators,
-  LogicGateOperators,
-  MathOperators,
-  Schemes,
-} from "./types";
+import { Schemes } from "./types";
 
 export const contextMenu = new ContextMenuPlugin<Schemes>({
   items: ContextMenuPresets.classic.setup([
@@ -31,21 +32,21 @@ export const contextMenu = new ContextMenuPlugin<Schemes>({
     ["Action", () => new ActionNode()],
     [
       "Math",
-      Object.values(MathOperators).map((operator) => [
+      Object.values(MathOperatorSchema.enum).map((operator) => [
         operator,
         () => new MathNode(operator),
       ]),
     ],
     [
       "Logical",
-      Object.values(ConditionOperators).map((e) => [
-        e.toString(),
-        () => new LogicalNode(e),
+      Object.values(LogicalOperatorSchema.enum).map((operator) => [
+        operator,
+        () => new LogicalNode(operator),
       ]),
     ],
     [
       "Boolean Logic",
-      Object.values(LogicGateOperators).map((operator) => [
+      Object.values(BooleanLogicOperatorSchema.enum).map((operator) => [
         operator,
         () => new LogicGateNode(operator),
       ]),

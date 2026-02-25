@@ -204,10 +204,10 @@ async function setupDefaultStrategy(
   }
 
   const close = new OHLCVNode();
-  const sma20 = new IndicatorNode("sma");
-  const sma50 = new IndicatorNode("sma");
-  const goldenCross = new LogicalNode(ConditionOperators.CROSSOVER);
-  const deadCross = new LogicalNode(ConditionOperators.CROSSDOWN);
+  const sma20 = new IndicatorNode("SMA");
+  const sma50 = new IndicatorNode("SMA");
+  const goldenCross = new LogicalNode("CrossOver");
+  const deadCross = new LogicalNode("CrossDown");
   const longEntry = new ActionNode();
   const longExit = new ActionNode();
   const shortEntry = new ActionNode();

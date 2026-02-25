@@ -1,4 +1,10 @@
-import { IndicatorKind, IndicatorRegistry } from "shared";
+import {
+  BooleanLogicOperatorSchema,
+  IndicatorKind,
+  IndicatorRegistry,
+  LogicalOperatorSchema,
+  MathOperatorSchema,
+} from "shared";
 import {
   ActionNode,
   IndicatorNode,
@@ -8,11 +14,6 @@ import {
   NodeBase,
   OHLCVNode,
 } from "./nodes";
-import {
-  ConditionOperators,
-  LogicGateOperators,
-  MathOperators,
-} from "./types";
 
 export type NodeCatalogItemId = string;
 
@@ -36,7 +37,7 @@ const indicatorItems: NodeCatalogItem[] = Object.keys(IndicatorRegistry).map(
   }),
 );
 
-const mathItems: NodeCatalogItem[] = Object.values(MathOperators).map(
+const mathItems: NodeCatalogItem[] = Object.values(MathOperatorSchema.enum).map(
   (operator) => ({
     id: `math:${operator}`,
     label: operator,
@@ -44,16 +45,16 @@ const mathItems: NodeCatalogItem[] = Object.values(MathOperators).map(
   }),
 );
 
-const logicalItems: NodeCatalogItem[] = Object.values(ConditionOperators).map(
-  (operator) => ({
-    id: `logical:${operator}`,
-    label: operator,
-    group: "logical",
-  }),
-);
+const logicalItems: NodeCatalogItem[] = Object.values(
+  LogicalOperatorSchema.enum,
+).map((operator) => ({
+  id: `logical:${operator}`,
+  label: operator,
+  group: "logical",
+}));
 
 const booleanLogicItems: NodeCatalogItem[] = Object.values(
-  LogicGateOperators,
+  BooleanLogicOperatorSchema.enum,
 ).map((operator) => ({
   id: `boolean-logic:${operator}`,
   label: operator,
@@ -101,20 +102,32 @@ export function createNodeFromCatalogItem(id: NodeCatalogItemId): NodeBase {
   }
 
   if (id.startsWith("math:")) {
-    const operator = id.slice("math:".length) as MathOperators;
-    return new MathNode(operator);
+    const operator = MathOperatorSchema.safeParse(id.slice("math:".length));
+    if (!operator.success) {
+      throw new Error(`Invalid math operator: ${id}`);
+    }
+    return new MathNode(operator.data);
   }
 
   if (id.startsWith("logical:")) {
-    const operator = id.slice("logical:".length) as ConditionOperators;
-    return new LogicalNode(operator);
+    const operator = LogicalOperatorSchema.safeParse(
+      id.slice("logical:".length),
+    );
+    if (!operator.success) {
+      throw new Error(`Invalid logical operator: ${id}`);
+    }
+    return new LogicalNode(operator.data);
   }
 
   if (id.startsWith("boolean-logic:")) {
-    const operator = id.slice("boolean-logic:".length) as LogicGateOperators;
-    return new LogicGateNode(operator);
+    const operator = BooleanLogicOperatorSchema.safeParse(
+      id.slice("boolean-logic:".length),
+    );
+    if (!operator.success) {
+      throw new Error(`Invalid boolean logic operator: ${id}`);
+    }
+    return new LogicGateNode(operator.data);
   }
 
   throw new Error(`Unknown node catalog item: ${id}`);
 }
-

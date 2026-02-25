@@ -4,6 +4,7 @@ import {
   type GraphNode,
   type IndicatorKind,
   IndicatorRegistry,
+  LogicalOperator,
   type MathOperator,
   NodeKind,
   OhlcvKind,
@@ -21,7 +22,6 @@ import {
   getSelectControlValue,
 } from "./controls";
 import { socket } from "./sockets";
-import { ConditionOperators, LogicGateOperators, MathOperators } from "./types";
 
 export abstract class NodeBase extends ClassicPreset.Node<
   Record<string, ClassicPreset.Socket>,
@@ -184,9 +184,9 @@ export class IndicatorNode extends NodeBase {
 }
 
 export class LogicalNode extends NodeBase {
-  readonly operator: ConditionOperators;
+  readonly operator: LogicalOperator;
 
-  constructor(operator: ConditionOperators) {
+  constructor(operator: LogicalOperator) {
     super(operator.toString());
     this.operator = operator;
 
@@ -227,9 +227,9 @@ export class LogicalNode extends NodeBase {
 }
 
 export class MathNode extends NodeBase {
-  readonly operator: MathOperators;
+  readonly operator: MathOperator;
 
-  constructor(operator: MathOperators) {
+  constructor(operator: MathOperator) {
     super(operator.toString());
     this.operator = operator;
 
@@ -256,7 +256,7 @@ export class MathNode extends NodeBase {
       id: String(this.id),
       spec: {
         kind: NodeKind.MATH,
-        operator: this.operator as MathOperator,
+        operator: this.operator,
         inputs: {
           left,
           right,
@@ -270,18 +270,18 @@ export class MathNode extends NodeBase {
 }
 
 export class LogicGateNode extends NodeBase {
-  readonly operator: LogicGateOperators;
+  readonly operator: BooleanLogicOperator;
   private isSyncingInputCountControl = false;
   private onStructureChanged?: (removedInputKeys: string[]) => void;
 
-  constructor(operator: LogicGateOperators) {
+  constructor(operator: BooleanLogicOperator) {
     super(operator.toString());
     this.operator = operator;
 
-    const initialInputCount = operator === LogicGateOperators.NOT ? 1 : 2;
+    const initialInputCount = operator === "NOT" ? 1 : 2;
     this.ensureInputCount(initialInputCount);
 
-    if (operator !== LogicGateOperators.NOT) {
+    if (operator !== "NOT") {
       this.addControl(
         "inputCount",
         new StepperControl({
@@ -312,9 +312,9 @@ export class LogicGateNode extends NodeBase {
 
   private clampInputCount(value: number): number {
     if (!Number.isFinite(value)) {
-      return this.operator === LogicGateOperators.NOT ? 1 : 2;
+      return this.operator === "NOT" ? 1 : 2;
     }
-    if (this.operator === LogicGateOperators.NOT) {
+    if (this.operator === "NOT") {
       return 1;
     }
     return Math.max(2, Math.min(8, Math.trunc(value)));
@@ -387,7 +387,7 @@ export class LogicGateNode extends NodeBase {
       id: String(this.id),
       spec: {
         kind: NodeKind.BOOLEAN_LOGIC,
-        operator: this.operator as BooleanLogicOperator,
+        operator: this.operator,
         inputs,
         outputs: {
           true: true,
