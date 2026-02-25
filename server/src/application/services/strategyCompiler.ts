@@ -11,6 +11,7 @@ import {
 import {
   IndicatorRegistry,
   NodeKind,
+  OrderMode,
   type BooleanLogicNodeSpec,
   type IndicatorKind,
   type IndicatorNodeSpec,
@@ -62,47 +63,12 @@ function asNumericSeries(
   return source as NumericSeries;
 }
 
-function isEntryActionSpec(spec: ActionNode["spec"]): boolean {
-  const actionType = (spec as { actionType?: unknown }).actionType;
-  if (actionType === "marketEntry") {
-    return true;
-  }
-  if (actionType === "marketExit") {
-    return false;
-  }
-  // Legacy fallback.
-  const maybeKind = (spec as { kind?: unknown }).kind;
-  return maybeKind === "ENTRY";
-}
-
-function isExitActionSpec(spec: ActionNode["spec"]): boolean {
-  const actionType = (spec as { actionType?: unknown }).actionType;
-  if (actionType === "marketExit") {
-    return true;
-  }
-  if (actionType === "marketEntry") {
-    return false;
-  }
-  // Legacy fallback.
-  const maybeKind = (spec as { kind?: unknown }).kind;
-  return maybeKind === "EXIT";
-}
-
 function getEntryActionDirection(spec: ActionNode["spec"]): "LONG" | "SHORT" {
-  if (!isEntryActionSpec(spec)) {
+  if (spec.actionType === OrderMode.enum.MARKET_EXIT) {
     throw new Error("Expected marketEntry action for entry direction");
   }
-  const maybeDirection = (spec as { direction?: unknown }).direction;
-  if (maybeDirection === "LONG" || maybeDirection === "SHORT") {
-    return maybeDirection;
-  }
-  const legacy = spec as {
-    actionType?: string;
-    params?: { side?: "BUY" | "SELL" };
-  };
-  return legacy.actionType === "marketEntry" && legacy.params?.side === "SELL"
-    ? "SHORT"
-    : "LONG";
+
+  return spec.params.side === "SELL" ? "SHORT" : "LONG";
 }
 
 function getNodePortSeries(
@@ -488,10 +454,10 @@ export function compileSignals(
     (node): node is ActionNode => node instanceof ActionNode,
   );
   const entryActions = actions.filter(
-    (node) => isEntryActionSpec(node.spec),
+    (node) => node.spec.actionType === OrderMode.enum.MARKET_ENTRY,
   );
   const exitActions = actions.filter(
-    (node) => isExitActionSpec(node.spec),
+    (node) => node.spec.actionType === OrderMode.enum.MARKET_EXIT,
   );
 
   const rowCount = inputDf.count();

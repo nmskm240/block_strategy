@@ -29,9 +29,17 @@ export const SUPPORTED_SYMBOLS = SupportedSymbolSchema.options;
 
 export type SupportedSymbol = z.infer<typeof SupportedSymbolSchema>;
 
-export const OhlcvKind = z.enum(["OPEN", "HIHG", "LOW", "CLOSE", "VOLUME"]);
+export const OhlcvKind = z.enum(["OPEN", "HIGH", "LOW", "CLOSE", "VOLUME"]);
 
 export type OhlcvKind = z.infer<typeof OhlcvKind>;
+
+export const OrderMode = z.enum(["MARKET_ENTRY", "MARKET_EXIT"]);
+
+export type OrderMode = z.infer<typeof OrderMode>;
+
+export const OrderSide = z.enum(["BUY", "SELL"]);
+
+export type OrderSide = z.infer<typeof OrderSide>;
 
 export const Timeframe = z.enum([
   "1min",

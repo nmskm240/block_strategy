@@ -25,12 +25,7 @@ export function getTextControlValue(control: unknown, fallback: string): string 
   return value.length > 0 ? value : fallback;
 }
 
-export function getSelectControlValue<T extends string>(
-  control: unknown,
-  fallback: T,
-): T {
+export function getSelectControlValue<T>(control: unknown, fallback: T): T {
   if (!(control instanceof SelectControl)) return fallback;
-  const raw = control.value;
-  if (typeof raw !== "string") return fallback;
-  return raw as T;
+  return control.value as T;
 }

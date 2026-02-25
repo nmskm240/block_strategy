@@ -1,29 +1,29 @@
 import { useEffect, useState } from "react";
 import { ClassicPreset } from "rete";
 
-export type SelectOption = {
+export type SelectOption<T = string> = {
   label: string;
-  value: string;
+  value: T;
   disabled?: boolean;
 };
 
-export type SelectControlOptions = {
-  options: SelectOption[];
-  initial?: string;
+export type SelectControlOptions<T = string> = {
+  options: SelectOption<T>[];
+  initial?: T;
   readonly?: boolean;
   hidden?: boolean;
-  change?: (value: string) => void;
+  change?: (value: T) => void;
 };
 
-export class SelectControl extends ClassicPreset.Control {
-  value: string;
+export class SelectControl<T = string> extends ClassicPreset.Control {
+  value: T;
   readonly: boolean;
   hidden: boolean;
-  options: SelectOption[];
-  initial?: string;
-  private onChange?: (value: string) => void;
+  options: SelectOption<T>[];
+  initial?: T;
+  private onChange?: (value: T) => void;
 
-  constructor(options: SelectControlOptions) {
+  constructor(options: SelectControlOptions<T>) {
     if (options.options.length <= 0) {
       throw new Error();
     }
@@ -37,24 +37,44 @@ export class SelectControl extends ClassicPreset.Control {
     this.value = options.initial ?? this.options[0].value;
   }
 
-  setValue(value?: string) {
-    if (!value) {
+  private findOptionIndex(value: T) {
+    return this.options.findIndex((option) => Object.is(option.value, value));
+  }
+
+  setValue(value?: T) {
+    if (typeof value === "undefined") {
+      return;
+    }
+    if (this.findOptionIndex(value) < 0) {
       return;
     }
 
     this.value = value;
-    if (this.onChange && typeof value !== "undefined") {
+    if (this.onChange) {
       this.onChange(value);
     }
   }
+
+  getSelectedIndex() {
+    const index = this.findOptionIndex(this.value);
+    return index >= 0 ? index : 0;
+  }
+
+  setValueByIndex(index: number) {
+    const option = this.options[index];
+    if (!option) {
+      return;
+    }
+    this.setValue(option.value);
+  }
 }
 
-export function SelectControlComponent(props: { data: SelectControl }) {
+export function SelectControlComponent(props: { data: SelectControl<unknown> }) {
   const { data } = props;
-  const [value, setValue] = useState(data.value);
+  const [selectedIndex, setSelectedIndex] = useState(data.getSelectedIndex());
 
   useEffect(() => {
-    setValue(data.value);
+    setSelectedIndex(data.getSelectedIndex());
   }, [data.value]);
 
   if (data.hidden) {
@@ -63,13 +83,16 @@ export function SelectControlComponent(props: { data: SelectControl }) {
 
   return (
     <select
-      value={value}
+      value={String(selectedIndex)}
       disabled={data.readonly}
       onPointerDown={(event) => event.stopPropagation()}
       onChange={(event) => {
-        const next = event.target.value;
-        setValue(next);
-        data.setValue(next);
+        const nextIndex = Number(event.target.value);
+        if (!Number.isInteger(nextIndex)) {
+          return;
+        }
+        setSelectedIndex(nextIndex);
+        data.setValueByIndex(nextIndex);
       }}
       style={{
         width: "100%",
@@ -81,10 +104,10 @@ export function SelectControlComponent(props: { data: SelectControl }) {
         boxSizing: "border-box",
       }}
     >
-      {data.options.map((option) => (
+      {data.options.map((option, index) => (
         <option
-          key={option.value}
-          value={option.value}
+          key={`${option.label}-${String(option.value)}`}
+          value={String(index)}
           disabled={option.disabled}
         >
           {option.label}

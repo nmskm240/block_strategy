@@ -1,8 +1,9 @@
 import * as z from "zod";
 import { NodeKind } from "./nodeKind";
+import { OrderMode, OrderSide } from "../trade";
 
 function defineActionNodeSchema<TParam extends z.ZodRawShape>(
-  actionType: string,
+  actionType: OrderMode,
   params: TParam,
 ) {
   return z
@@ -14,27 +15,15 @@ function defineActionNodeSchema<TParam extends z.ZodRawShape>(
     .strict();
 }
 
-const MarketEntrySchema = defineActionNodeSchema("marketEntry", {
-  side: z.enum(["BUY", "SELL"]),
+const MarketEntrySchema = defineActionNodeSchema(OrderMode.enum.MARKET_ENTRY, {
+  side: OrderSide,
   size: z.number().positive(),
 });
-const MarketExitSchema = defineActionNodeSchema("marketExit", {
-  size: z.number().positive(),
-});
+const MarketExitSchema = defineActionNodeSchema(OrderMode.enum.MARKET_EXIT, {});
 
-export const ActionRegistry = {
-  marketEntry: MarketEntrySchema,
-  marketExit: MarketExitSchema,
-} as const;
-
-export type ActionKind = keyof typeof ActionRegistry;
-
-export const ActionNodeSpecSchema = z.discriminatedUnion(
-  "actionType",
-  Object.values(ActionRegistry) as [
-    (typeof ActionRegistry)[keyof typeof ActionRegistry],
-    ...(typeof ActionRegistry)[keyof typeof ActionRegistry][],
-  ],
-);
+export const ActionNodeSpecSchema = z.discriminatedUnion("actionType", [
+  MarketEntrySchema,
+  MarketExitSchema,
+]);
 
 export type ActionNodeSpec = z.infer<typeof ActionNodeSpecSchema>;

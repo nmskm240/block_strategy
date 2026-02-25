@@ -1,7 +1,6 @@
 import * as z from "zod";
 import { Graph } from "./graph";
 import {
-  OHLCVSchema,
   SupportedSymbolSchema,
   Timeframe,
   TradeSchema,

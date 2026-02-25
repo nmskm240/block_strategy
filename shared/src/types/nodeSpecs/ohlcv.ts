@@ -1,12 +1,13 @@
 import * as z from "zod";
 import { NodeKind } from "./nodeKind";
+import { OhlcvKind } from "../trade";
 
 export const OhlcvNodeSpecSchema = z
   .object({
     kind: z.literal(NodeKind.OHLCV),
     params: z
       .object({
-        kind: z.enum(["OPEN", "HIGH", "LOW", "CLOSE", "VOLUME"]),
+        kind: OhlcvKind,
       })
       .strict(),
   })

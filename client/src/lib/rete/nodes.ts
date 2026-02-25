@@ -1,6 +1,5 @@
 import { ClassicPreset } from "rete";
 import {
-  ActionKind,
   type BooleanLogicOperator,
   type GraphNode,
   getIndicatorParamDefault,
@@ -8,6 +7,9 @@ import {
   IndicatorRegistry,
   type MathOperator,
   NodeKind,
+  OhlcvKind,
+  type OrderMode,
+  OrderSide,
 } from "shared";
 
 import {
@@ -19,11 +21,7 @@ import {
   getSelectControlValue,
 } from "./controls";
 import { socket } from "./sockets";
-import {
-  ConditionOperators,
-  LogicGateOperators,
-  MathOperators,
-} from "./types";
+import { ConditionOperators, LogicGateOperators, MathOperators } from "./types";
 
 export abstract class NodeBase extends ClassicPreset.Node<
   Record<string, ClassicPreset.Socket>,
@@ -39,10 +37,12 @@ export abstract class NodeBase extends ClassicPreset.Node<
 }
 
 export class ActionNode extends NodeBase {
-  private syncControlsByMode(mode: ActionKind) {
-    const isExit = mode === "marketExit";
+  private syncControlsByMode(mode: OrderMode) {
+    const isExit = mode === "MARKET_EXIT";
     const sideControl = this.controls.side as SelectControl | undefined;
-    const sizeControl = this.controls.size as LabeledInputControl<"number"> | undefined;
+    const sizeControl = this.controls.size as
+      | LabeledInputControl<"number">
+      | undefined;
     if (sideControl) {
       sideControl.hidden = isExit;
     }
@@ -57,20 +57,20 @@ export class ActionNode extends NodeBase {
     this.addInput("trigger", new ClassicPreset.Input(socket, "trigger"));
     this.addControl(
       "mode",
-      new SelectControl({
+      new SelectControl<OrderMode>({
         options: [
-          { label: "Entry", value: "marketEntry" },
-          { label: "Exit", value: "marketExit" },
+          { label: "Entry", value: "MARKET_ENTRY" },
+          { label: "Exit", value: "MARKET_EXIT" },
         ],
-        initial: "marketEntry",
+        initial: "MARKET_ENTRY",
         change: (value) => {
-          this.syncControlsByMode(value as ActionKind);
+          this.syncControlsByMode(value);
         },
       }),
     );
     this.addControl(
       "side",
-      new SelectControl({
+      new SelectControl<OrderSide>({
         options: [
           { label: "Buy", value: "BUY" },
           { label: "Sell", value: "SELL" },
@@ -83,25 +83,23 @@ export class ActionNode extends NodeBase {
       new LabeledInputControl("number", { label: "size", initial: 1 }),
     );
 
-    this.syncControlsByMode("marketEntry");
+    this.syncControlsByMode("MARKET_ENTRY");
   }
 
   toGraphNode(): GraphNode {
     const actionType = getSelectControlValue(
       this.controls.mode,
-      "marketEntry",
-    ) as ActionKind;
+      "MARKET_ENTRY",
+    ) as OrderMode;
     const size = getNumberControlValue(this.controls.size, 1);
 
-    if (actionType === "marketExit") {
+    if (actionType === "MARKET_EXIT") {
       return {
         id: String(this.id),
         spec: {
           kind: NodeKind.ACTION,
           actionType,
-          params: {
-            size,
-          },
+          params: {},
         },
       };
     }
@@ -406,7 +404,7 @@ export class OHLCVNode extends NodeBase {
     this.addOutput("value", new ClassicPreset.Output(socket, "Value", true));
     this.addControl(
       "kind",
-      new SelectControl({
+      new SelectControl<OhlcvKind>({
         options: [
           { label: "Open", value: "OPEN" },
           { label: "High", value: "HIGH" },

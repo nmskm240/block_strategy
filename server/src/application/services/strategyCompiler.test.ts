@@ -48,13 +48,13 @@ describe("strategyCompiler.compileSignals", () => {
     });
     const entry = new ActionNode(StrategyGraphNodeId("entry"), {
       kind: "action",
-      actionType: "marketEntry",
+      actionType: "MARKET_ENTRY",
       params: { side: "BUY", size: 1 },
     });
     const exit = new ActionNode(StrategyGraphNodeId("exit"), {
       kind: "action",
-      actionType: "marketExit",
-      params: { size: 1 },
+      actionType: "MARKET_EXIT",
+      params: {},
     });
 
     const graph = new StrategyGraphBuilder()
@@ -126,12 +126,12 @@ describe("strategyCompiler.compileSignals", () => {
     });
     const longEntry = new ActionNode(StrategyGraphNodeId("long-entry"), {
       kind: "action",
-      actionType: "marketEntry",
+      actionType: "MARKET_ENTRY",
       params: { side: "BUY", size: 1 },
     });
     const shortEntry = new ActionNode(StrategyGraphNodeId("short-entry"), {
       kind: "action",
-      actionType: "marketEntry",
+      actionType: "MARKET_ENTRY",
       params: { side: "SELL", size: 1 },
     });
 
@@ -191,7 +191,7 @@ describe("strategyCompiler.compileSignals", () => {
     });
     const entry = new ActionNode(StrategyGraphNodeId("entry"), {
       kind: "action",
-      actionType: "marketEntry",
+      actionType: "MARKET_ENTRY",
       params: { side: "BUY", size: 1 },
     });
 
@@ -241,7 +241,7 @@ describe("strategyCompiler.compileSignals", () => {
     });
     const entry = new ActionNode(StrategyGraphNodeId("entry"), {
       kind: "action",
-      actionType: "marketEntry",
+      actionType: "MARKET_ENTRY",
       params: { side: "BUY", size: 1 },
     });
 
@@ -308,28 +308,40 @@ describe("strategyCompiler.compileSignals", () => {
       operator: "==" | "!=" | "<" | "<=" | ">" | ">=",
       side: "BUY" | "SELL",
     ) => {
-      const close = new OHLCVNode(StrategyGraphNodeId(`close-${rightPortName}`), {
-        kind: "ohlcv",
-        params: { kind: "CLOSE" },
-      });
-      const bband = new IndicatorNode(StrategyGraphNodeId(`bband-${rightPortName}`), {
-        kind: "indicator",
-        indicatorType: "bband",
-        params: { period: 3, stdDev: 1 },
-        inputs: { source: 0 },
-        outputs: { upperBand: 0, middleBand: 0, lowerBand: 0 },
-      });
-      const cond = new LogicalNode(StrategyGraphNodeId(`cond-${rightPortName}`), {
-        kind: "logical",
-        operator,
-        inputs: { left: 0, right: 0 },
-        outputs: { true: true },
-      });
-      const entry = new ActionNode(StrategyGraphNodeId(`entry-${rightPortName}`), {
-        kind: "action",
-        actionType: "marketEntry",
-        params: { side, size: 1 },
-      });
+      const close = new OHLCVNode(
+        StrategyGraphNodeId(`close-${rightPortName}`),
+        {
+          kind: "ohlcv",
+          params: { kind: "CLOSE" },
+        },
+      );
+      const bband = new IndicatorNode(
+        StrategyGraphNodeId(`bband-${rightPortName}`),
+        {
+          kind: "indicator",
+          indicatorType: "bband",
+          params: { period: 3, stdDev: 1 },
+          inputs: { source: 0 },
+          outputs: { upperBand: 0, middleBand: 0, lowerBand: 0 },
+        },
+      );
+      const cond = new LogicalNode(
+        StrategyGraphNodeId(`cond-${rightPortName}`),
+        {
+          kind: "logical",
+          operator,
+          inputs: { left: 0, right: 0 },
+          outputs: { true: true },
+        },
+      );
+      const entry = new ActionNode(
+        StrategyGraphNodeId(`entry-${rightPortName}`),
+        {
+          kind: "action",
+          actionType: "MARKET_ENTRY",
+          params: { side, size: 1 },
+        },
+      );
 
       const graph = new StrategyGraphBuilder()
         .addNode(close)
@@ -366,11 +378,7 @@ describe("strategyCompiler.compileSignals", () => {
       false,
     ]);
     expect(upperResult.map((row) => row.entryDirection)).toEqual([
-      1,
-      1,
-      1,
-      1,
-      1,
+      1, 1, 1, 1, 1,
     ]);
 
     const middleResult = runPortCase("middleBand", ">=", "SELL");
@@ -382,11 +390,7 @@ describe("strategyCompiler.compileSignals", () => {
       false,
     ]);
     expect(middleResult.map((row) => row.entryDirection)).toEqual([
-      1,
-      1,
-      -1,
-      1,
-      1,
+      1, 1, -1, 1, 1,
     ]);
 
     const lowerResult = runPortCase("lowerBand", "<=", "BUY");
@@ -398,11 +402,7 @@ describe("strategyCompiler.compileSignals", () => {
       false,
     ]);
     expect(lowerResult.map((row) => row.entryDirection)).toEqual([
-      1,
-      1,
-      1,
-      1,
-      1,
+      1, 1, 1, 1, 1,
     ]);
   });
 
@@ -419,7 +419,7 @@ describe("strategyCompiler.compileSignals", () => {
     });
     const entry = new ActionNode(StrategyGraphNodeId("entry-literal-right"), {
       kind: "action",
-      actionType: "marketEntry",
+      actionType: "MARKET_ENTRY",
       params: { side: "BUY", size: 1 },
     });
 
@@ -457,7 +457,7 @@ describe("strategyCompiler.compileSignals", () => {
     });
     const entry = new ActionNode(StrategyGraphNodeId("entry-literal-both"), {
       kind: "action",
-      actionType: "marketEntry",
+      actionType: "MARKET_ENTRY",
       params: { side: "BUY", size: 1 },
     });
 
@@ -501,7 +501,7 @@ describe("strategyCompiler.compileSignals", () => {
     });
     const entry = new ActionNode(StrategyGraphNodeId("entry-math"), {
       kind: "action",
-      actionType: "marketEntry",
+      actionType: "MARKET_ENTRY",
       params: { side: "BUY", size: 1 },
     });
 
@@ -553,7 +553,7 @@ describe("strategyCompiler.compileSignals", () => {
     });
     const entry = new ActionNode(StrategyGraphNodeId("mod-entry"), {
       kind: "action",
-      actionType: "marketEntry",
+      actionType: "MARKET_ENTRY",
       params: { side: "BUY", size: 1 },
     });
 
@@ -629,7 +629,7 @@ describe("strategyCompiler.compileSignals", () => {
     });
     const entry = new ActionNode(StrategyGraphNodeId("entry-logic-gate"), {
       kind: "action",
-      actionType: "marketEntry",
+      actionType: "MARKET_ENTRY",
       params: { side: "BUY", size: 1 },
     });
 
@@ -676,7 +676,7 @@ describe("strategyCompiler.compileSignals", () => {
       .build();
 
     const bars = makeBars([
-      { open: 0, close: 9 },  // and=false, not=true => or=true
+      { open: 0, close: 9 }, // and=false, not=true => or=true
       { open: 0, close: 11 }, // and=true, not=false => or=true
       { open: 0, close: 14 }, // and=false, not=false => or=false
     ]);

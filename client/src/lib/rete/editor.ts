@@ -6,7 +6,7 @@ import {
   Presets as ConnectionPresets,
 } from "rete-connection-plugin";
 import { Presets, ReactPlugin } from "rete-react-plugin";
-import type { Graph } from "shared";
+import type { Graph, OhlcvKind, OrderMode, OrderSide } from "shared";
 import "./styles/area.css";
 import { Connection } from "./connection";
 import { contextMenu } from "./context";
@@ -194,12 +194,12 @@ async function setupDefaultStrategy(
   const shortEntry = new ActionNode();
   const shortExit = new ActionNode();
 
-  (close.controls.kind as SelectControl).setValue("CLOSE");
+  (close.controls.kind as SelectControl<OhlcvKind>).setValue("CLOSE");
   (sma20.controls.period as LabeledInputControl<"number">).setValue(20);
   (sma50.controls.period as LabeledInputControl<"number">).setValue(50);
-  (longExit.controls.mode as SelectControl).setValue("marketExit");
-  (shortEntry.controls.side as SelectControl).setValue("SELL");
-  (shortExit.controls.mode as SelectControl).setValue("marketExit");
+  (longExit.controls.mode as SelectControl<OrderMode>).setValue("MARKET_EXIT");
+  (shortEntry.controls.side as SelectControl<OrderSide>).setValue("SELL");
+  (shortExit.controls.mode as SelectControl<OrderMode>).setValue("MARKET_EXIT");
 
   await editor.addNode(close);
   await editor.addNode(sma20);
