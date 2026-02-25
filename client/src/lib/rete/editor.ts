@@ -10,6 +10,7 @@ import type { Graph, OhlcvKind, OrderMode, OrderSide } from "shared";
 import "./styles/area.css";
 import { Connection } from "./connection";
 import { contextMenu } from "./context";
+import { createNodeFromCatalogItem, type NodeCatalogItemId } from "./nodeCatalog";
 import {
   LabeledInputControl,
   LabeledInputControlComponent,
@@ -37,6 +38,7 @@ import type { AreaExtra, Schemes } from "./types";
 export type EditorHandle = {
   destroy: () => void;
   getGraph: () => Graph;
+  addNodeAtViewportCenter: (itemId: NodeCatalogItemId) => Promise<void>;
 };
 
 export async function createEditor(container: HTMLElement) {
@@ -170,6 +172,23 @@ export async function createEditor(container: HTMLElement) {
         },
       }));
       return { nodes, edges };
+    },
+    addNodeAtViewportCenter: async (itemId) => {
+      const node = createNodeFromCatalogItem(itemId);
+      await editor.addNode(node);
+
+      const rect = container.getBoundingClientRect();
+      const transform = area.area.transform;
+      const viewportCenter = {
+        x: (rect.width / 2 - transform.x) / transform.k,
+        y: (rect.height / 2 - transform.y) / transform.k,
+      };
+
+      // Approximate node size so placement feels centered across node types.
+      await area.translate(node.id, {
+        x: viewportCenter.x - 110,
+        y: viewportCenter.y - 70,
+      });
     },
   };
 

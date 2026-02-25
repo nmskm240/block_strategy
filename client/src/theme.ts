@@ -18,6 +18,8 @@ type AppPaletteCustom = {
   action: {
     fabBg: string;
     fabHoverBg: string;
+    addNodeFabBg: string;
+    addNodeFabHoverBg: string;
     primaryButtonBg: string;
     primaryButtonHoverBg: string;
     primaryButtonBorder: string;
@@ -88,6 +90,8 @@ export const appTheme = createTheme({
       action: {
         fabBg: "#3a4aa8",
         fabHoverBg: "#4658bf",
+        addNodeFabBg: "#334155",
+        addNodeFabHoverBg: "#475569",
         primaryButtonBg: "#3a4aa8",
         primaryButtonHoverBg: "#4658bf",
         primaryButtonBorder: "#2c387f",
