@@ -16,7 +16,7 @@ function defineIndicatorNodeSchema<
 }
 
 const SmaSchema = defineIndicatorNodeSchema(
-  "sma",
+  "SMA",
   {
     period: z.number().int().min(1).default(20),
   },
@@ -29,7 +29,7 @@ const SmaSchema = defineIndicatorNodeSchema(
 );
 
 const EmaSchema = defineIndicatorNodeSchema(
-  "ema",
+  "EMA",
   {
     period: z.number().int().min(1).default(20),
   },
@@ -42,7 +42,7 @@ const EmaSchema = defineIndicatorNodeSchema(
 );
 
 const RsiSchema = defineIndicatorNodeSchema(
-  "rsi",
+  "RSI",
   {
     period: z.number().int().min(1).default(20),
   },
@@ -55,7 +55,7 @@ const RsiSchema = defineIndicatorNodeSchema(
 );
 
 const MomentumSchema = defineIndicatorNodeSchema(
-  "momentum",
+  "Momentum",
   {
     period: z.number().int().min(1).default(10),
   },
@@ -68,7 +68,7 @@ const MomentumSchema = defineIndicatorNodeSchema(
 );
 
 const RocSchema = defineIndicatorNodeSchema(
-  "roc",
+  "ROC",
   {
     period: z.number().int().min(1).default(10),
   },
@@ -81,7 +81,7 @@ const RocSchema = defineIndicatorNodeSchema(
 );
 
 const DirectionSchema = defineIndicatorNodeSchema(
-  "direction",
+  "Direction",
   {
     period: z.number().int().min(1).default(10),
   },
@@ -94,7 +94,7 @@ const DirectionSchema = defineIndicatorNodeSchema(
 );
 
 const ExtremaSchema = defineIndicatorNodeSchema(
-  "extrema",
+  "Extrema",
   {},
   {
     source: z.number(),
@@ -105,7 +105,7 @@ const ExtremaSchema = defineIndicatorNodeSchema(
 );
 
 const TrendsSchema = defineIndicatorNodeSchema(
-  "trends",
+  "Trends",
   {},
   {
     source: z.number(),
@@ -116,7 +116,7 @@ const TrendsSchema = defineIndicatorNodeSchema(
 );
 
 const DaysRisingSchema = defineIndicatorNodeSchema(
-  "daysRising",
+  "DaysRising",
   {},
   {
     source: z.number(),
@@ -127,7 +127,7 @@ const DaysRisingSchema = defineIndicatorNodeSchema(
 );
 
 const DaysFallingSchema = defineIndicatorNodeSchema(
-  "daysFalling",
+  "DaysFalling",
   {},
   {
     source: z.number(),
@@ -138,7 +138,7 @@ const DaysFallingSchema = defineIndicatorNodeSchema(
 );
 
 const StreaksSchema = defineIndicatorNodeSchema(
-  "streaks",
+  "Streaks",
   {
     period: z.number().int().min(1).default(3),
   },
@@ -151,7 +151,7 @@ const StreaksSchema = defineIndicatorNodeSchema(
 );
 
 const ConnersRsiSchema = defineIndicatorNodeSchema(
-  "crsi",
+  "CRSI",
   {
     rsiPeriod: z.number().int().min(1).default(3),
     streakRsiPeriod: z.number().int().min(1).default(2),
@@ -166,7 +166,7 @@ const ConnersRsiSchema = defineIndicatorNodeSchema(
 );
 
 const BBandSchema = defineIndicatorNodeSchema(
-  "bband",
+  "BBand",
   {
     period: z.number().int().min(1).default(20),
     stdDev: z.number().positive().default(2),
@@ -182,7 +182,7 @@ const BBandSchema = defineIndicatorNodeSchema(
 );
 
 const BBandPercentBSchema = defineIndicatorNodeSchema(
-  "bbandPercentB",
+  "BBandPercentB",
   {
     period: z.number().int().min(1).default(20),
     stdDev: z.number().positive().default(2),
@@ -196,7 +196,7 @@ const BBandPercentBSchema = defineIndicatorNodeSchema(
 );
 
 const BBandBandwidthSchema = defineIndicatorNodeSchema(
-  "bbandBandwidth",
+  "BBandBandwidth",
   {
     period: z.number().int().min(1).default(20),
     stdDev: z.number().positive().default(2),
@@ -210,7 +210,7 @@ const BBandBandwidthSchema = defineIndicatorNodeSchema(
 );
 
 const MacdSchema = defineIndicatorNodeSchema(
-  "macd",
+  "MACD",
   {
     shortPeriod: z.number().int().min(1).default(12),
     longPeriod: z.number().int().min(1).default(26),
@@ -229,22 +229,22 @@ const MacdSchema = defineIndicatorNodeSchema(
 );
 
 export const IndicatorRegistry = {
-  sma: SmaSchema,
-  ema: EmaSchema,
-  rsi: RsiSchema,
-  momentum: MomentumSchema,
-  roc: RocSchema,
-  direction: DirectionSchema,
-  extrema: ExtremaSchema,
-  trends: TrendsSchema,
-  daysRising: DaysRisingSchema,
-  daysFalling: DaysFallingSchema,
-  streaks: StreaksSchema,
-  crsi: ConnersRsiSchema,
-  bband: BBandSchema,
-  bbandPercentB: BBandPercentBSchema,
-  bbandBandwidth: BBandBandwidthSchema,
-  macd: MacdSchema,
+  SMA: SmaSchema,
+  EMA: EmaSchema,
+  RSI: RsiSchema,
+  Momentum: MomentumSchema,
+  ROC: RocSchema,
+  Direction: DirectionSchema,
+  Extrema: ExtremaSchema,
+  Trends: TrendsSchema,
+  DaysRising: DaysRisingSchema,
+  DaysFalling: DaysFallingSchema,
+  Streaks: StreaksSchema,
+  CRSI: ConnersRsiSchema,
+  BBand: BBandSchema,
+  BBandPercentB: BBandPercentBSchema,
+  BBandBandwidth: BBandBandwidthSchema,
+  MACD: MacdSchema,
 } as const;
 
 export type IndicatorKind = keyof typeof IndicatorRegistry;

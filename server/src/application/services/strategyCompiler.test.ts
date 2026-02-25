@@ -184,7 +184,7 @@ describe("strategyCompiler.compileSignals", () => {
   it("indicator入力が不足している場合は例外を投げる", () => {
     const sma = new IndicatorNode(StrategyGraphNodeId("sma"), {
       kind: "indicator",
-      indicatorType: "sma",
+      indicatorType: "SMA",
       params: { period: 2 },
       inputs: { source: 0 },
       outputs: { value: 0 },
@@ -221,14 +221,14 @@ describe("strategyCompiler.compileSignals", () => {
     });
     const sma1 = new IndicatorNode(StrategyGraphNodeId("sma1"), {
       kind: "indicator",
-      indicatorType: "sma",
+      indicatorType: "SMA",
       params: { period: 2 },
       inputs: { source: 0 },
       outputs: { value: 0 },
     });
     const sma2 = new IndicatorNode(StrategyGraphNodeId("sma2"), {
       kind: "indicator",
-      indicatorType: "sma",
+      indicatorType: "SMA",
       params: { period: 2 },
       inputs: { source: 0 },
       outputs: { value: 0 },
@@ -319,7 +319,7 @@ describe("strategyCompiler.compileSignals", () => {
         StrategyGraphNodeId(`bband-${rightPortName}`),
         {
           kind: "indicator",
-          indicatorType: "bband",
+          indicatorType: "BBand",
           params: { period: 3, stdDev: 1 },
           inputs: { source: 0 },
           outputs: { upperBand: 0, middleBand: 0, lowerBand: 0 },

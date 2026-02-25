@@ -168,48 +168,48 @@ function compileIndicatorNode(
 
   const source = getInput("source");
   match(spec.indicatorType as IndicatorKind)
-    .with("sma", () => {
-      const typed = IndicatorRegistry.sma.parse(spec);
+    .with("SMA", () => {
+      const typed = IndicatorRegistry.SMA.parse(spec);
       outputs.set("value", source.sma(typed.params.period) as AnySeries);
     })
-    .with("ema", () => {
-      const typed = IndicatorRegistry.ema.parse(spec);
+    .with("EMA", () => {
+      const typed = IndicatorRegistry.EMA.parse(spec);
       outputs.set("value", source.ema(typed.params.period) as AnySeries);
     })
-    .with("rsi", () => {
-      const typed = IndicatorRegistry.rsi.parse(spec);
+    .with("RSI", () => {
+      const typed = IndicatorRegistry.RSI.parse(spec);
       outputs.set("value", source.rsi(typed.params.period) as AnySeries);
     })
-    .with("momentum", () => {
-      const typed = IndicatorRegistry.momentum.parse(spec);
+    .with("Momentum", () => {
+      const typed = IndicatorRegistry.Momentum.parse(spec);
       outputs.set("value", source.momentum(typed.params.period) as AnySeries);
     })
-    .with("roc", () => {
-      const typed = IndicatorRegistry.roc.parse(spec);
+    .with("ROC", () => {
+      const typed = IndicatorRegistry.ROC.parse(spec);
       outputs.set("value", source.roc(typed.params.period) as AnySeries);
     })
-    .with("direction", () => {
-      const typed = IndicatorRegistry.direction.parse(spec);
+    .with("Direction", () => {
+      const typed = IndicatorRegistry.Direction.parse(spec);
       outputs.set("value", source.direction(typed.params.period) as AnySeries);
     })
-    .with("extrema", () => {
+    .with("Extrema", () => {
       outputs.set("value", source.extrema() as AnySeries);
     })
-    .with("trends", () => {
+    .with("Trends", () => {
       outputs.set("value", source.trends() as AnySeries);
     })
-    .with("daysRising", () => {
+    .with("DaysRising", () => {
       outputs.set("value", source.daysRising() as AnySeries);
     })
-    .with("daysFalling", () => {
+    .with("DaysFalling", () => {
       outputs.set("value", source.daysFalling() as AnySeries);
     })
-    .with("streaks", () => {
-      const typed = IndicatorRegistry.streaks.parse(spec);
+    .with("Streaks", () => {
+      const typed = IndicatorRegistry.Streaks.parse(spec);
       outputs.set("value", source.streaks(typed.params.period) as AnySeries);
     })
-    .with("crsi", () => {
-      const typed = IndicatorRegistry.crsi.parse(spec);
+    .with("CRSI", () => {
+      const typed = IndicatorRegistry.CRSI.parse(spec);
       outputs.set(
         "value",
         source.crsi(
@@ -219,28 +219,28 @@ function compileIndicatorNode(
         ) as AnySeries,
       );
     })
-    .with("bband", () => {
-      const typed = IndicatorRegistry.bband.parse(spec);
+    .with("BBand", () => {
+      const typed = IndicatorRegistry.BBand.parse(spec);
       const stdDev = typed.params.stdDev;
       const bands = source.bollinger(typed.params.period, stdDev, stdDev);
       outputs.set("upperBand", bands.getSeries("upper") as AnySeries);
       outputs.set("middleBand", bands.getSeries("middle") as AnySeries);
       outputs.set("lowerBand", bands.getSeries("lower") as AnySeries);
     })
-    .with("bbandPercentB", () => {
-      const typed = IndicatorRegistry.bbandPercentB.parse(spec);
+    .with("BBandPercentB", () => {
+      const typed = IndicatorRegistry.BBandPercentB.parse(spec);
       const stdDev = typed.params.stdDev;
       const bands = source.bollinger(typed.params.period, stdDev, stdDev);
       outputs.set("value", bands.percentB() as AnySeries);
     })
-    .with("bbandBandwidth", () => {
-      const typed = IndicatorRegistry.bbandBandwidth.parse(spec);
+    .with("BBandBandwidth", () => {
+      const typed = IndicatorRegistry.BBandBandwidth.parse(spec);
       const stdDev = typed.params.stdDev;
       const bands = source.bollinger(typed.params.period, stdDev, stdDev);
       outputs.set("value", bands.bandwidth() as AnySeries);
     })
-    .with("macd", () => {
-      const typed = IndicatorRegistry.macd.parse(spec);
+    .with("MACD", () => {
+      const typed = IndicatorRegistry.MACD.parse(spec);
       const macd = source.macd(
         typed.params.shortPeriod,
         typed.params.longPeriod,
@@ -270,7 +270,11 @@ function compileLogicalNode(
     );
     if (inputEdge) {
       return asNumericSeries(
-        getNodePortSeries(inputEdge.from.nodeId, inputEdge.from.portName, context),
+        getNodePortSeries(
+          inputEdge.from.nodeId,
+          inputEdge.from.portName,
+          context,
+        ),
         `Logical node '${nodeId}' ${portName} input`,
       ).toArray();
     }
@@ -298,7 +302,7 @@ function compileLogicalNode(
         return leftValue > rightValue;
       case ">=":
         return leftValue >= rightValue;
-      case "CROSSOVER": {
+      case "CrossOver": {
         if (index === 0) {
           return false;
         }
@@ -309,7 +313,7 @@ function compileLogicalNode(
         }
         return prevLeft <= prevRight && leftValue > rightValue;
       }
-      case "CROSSDOWN": {
+      case "CrossDown": {
         if (index === 0) {
           return false;
         }
@@ -344,7 +348,11 @@ function compileMathNode(
     );
     if (inputEdge) {
       return asNumericSeries(
-        getNodePortSeries(inputEdge.from.nodeId, inputEdge.from.portName, context),
+        getNodePortSeries(
+          inputEdge.from.nodeId,
+          inputEdge.from.portName,
+          context,
+        ),
         `Math node '${nodeId}' ${portName} input`,
       ).toArray();
     }
@@ -407,7 +415,11 @@ function compileBooleanLogicNode(
       return new Array(rowCount).fill(spec.inputs[key]);
     }
     return asBooleanSeries(
-      getNodePortSeries(inputEdge.from.nodeId, inputEdge.from.portName, context),
+      getNodePortSeries(
+        inputEdge.from.nodeId,
+        inputEdge.from.portName,
+        context,
+      ),
     ).toArray();
   });
 

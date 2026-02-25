@@ -2,7 +2,6 @@ import { ClassicPreset } from "rete";
 import {
   type BooleanLogicOperator,
   type GraphNode,
-  getIndicatorParamDefault,
   type IndicatorKind,
   IndicatorRegistry,
   type MathOperator,
@@ -10,6 +9,7 @@ import {
   OhlcvKind,
   type OrderMode,
   OrderSide,
+  getIndicatorParamDefault,
 } from "shared";
 
 import {
@@ -54,7 +54,7 @@ export class ActionNode extends NodeBase {
   constructor() {
     super("Action");
 
-    this.addInput("trigger", new ClassicPreset.Input(socket, "trigger"));
+    this.addInput("trigger", new ClassicPreset.Input(socket, "Trigger"));
     this.addControl(
       "mode",
       new SelectControl<OrderMode>({
@@ -80,7 +80,7 @@ export class ActionNode extends NodeBase {
     );
     this.addControl(
       "size",
-      new LabeledInputControl("number", { label: "size", initial: 1 }),
+      new LabeledInputControl("number", { label: "Size", initial: 1 }),
     );
 
     this.syncControlsByMode("MARKET_ENTRY");
@@ -130,16 +130,16 @@ export class IndicatorNode extends NodeBase {
       throw new Error(`Unknown indicator kind: ${kind}`);
     }
     for (const key of Object.keys(spec.shape.inputs.shape)) {
-      this.addInput(key, new ClassicPreset.Input(socket, key));
+      this.addInput(key, new ClassicPreset.Input(socket, key.capitalize()));
     }
     for (const key of Object.keys(spec.shape.outputs.shape)) {
-      this.addOutput(key, new ClassicPreset.Output(socket, key));
+      this.addOutput(key, new ClassicPreset.Output(socket, key.capitalize()));
     }
     for (const key of Object.keys(spec.shape.params.shape)) {
       this.addControl(
         key,
         new LabeledInputControl("number", {
-          label: key,
+          label: key.capitalize(),
           initial: getIndicatorParamDefault(this.kind, key),
         }),
       );
@@ -190,19 +190,19 @@ export class LogicalNode extends NodeBase {
     super(operator.toString());
     this.operator = operator;
 
-    const leftInput = new ClassicPreset.Input(socket, "left");
+    const leftInput = new ClassicPreset.Input(socket, "Left");
     leftInput.addControl(
       new LabeledInputControl("number", { label: "Left", initial: 0 }),
     );
     this.addInput("left", leftInput);
 
-    const rightInput = new ClassicPreset.Input(socket, "right");
+    const rightInput = new ClassicPreset.Input(socket, "Right");
     rightInput.addControl(
       new LabeledInputControl("number", { label: "Right", initial: 0 }),
     );
     this.addInput("right", rightInput);
 
-    this.addOutput("true", new ClassicPreset.Output(socket, "true"));
+    this.addOutput("true", new ClassicPreset.Output(socket, "True"));
   }
 
   toGraphNode(): GraphNode {
@@ -233,19 +233,19 @@ export class MathNode extends NodeBase {
     super(operator.toString());
     this.operator = operator;
 
-    const leftInput = new ClassicPreset.Input(socket, "left");
+    const leftInput = new ClassicPreset.Input(socket, "Left");
     leftInput.addControl(
       new LabeledInputControl("number", { label: "Left", initial: 0 }),
     );
     this.addInput("left", leftInput);
 
-    const rightInput = new ClassicPreset.Input(socket, "right");
+    const rightInput = new ClassicPreset.Input(socket, "Right");
     rightInput.addControl(
       new LabeledInputControl("number", { label: "Right", initial: 0 }),
     );
     this.addInput("right", rightInput);
 
-    this.addOutput("value", new ClassicPreset.Output(socket, "value"));
+    this.addOutput("value", new ClassicPreset.Output(socket, "Value"));
   }
 
   toGraphNode(): GraphNode {
@@ -285,7 +285,7 @@ export class LogicGateNode extends NodeBase {
       this.addControl(
         "inputCount",
         new StepperControl({
-          label: "inputs",
+          label: "Inputs",
           initial: initialInputCount,
           min: 2,
           max: 8,
@@ -299,7 +299,7 @@ export class LogicGateNode extends NodeBase {
       );
     }
 
-    this.addOutput("true", new ClassicPreset.Output(socket, "true"));
+    this.addOutput("true", new ClassicPreset.Output(socket, "True"));
   }
 
   setOnStructureChanged(callback: (removedInputKeys: string[]) => void): void {
@@ -340,7 +340,7 @@ export class LogicGateNode extends NodeBase {
     if (currentKeys.length < nextCount) {
       for (let i = currentKeys.length; i < nextCount; i += 1) {
         const key = this.toInputKey(i);
-        const input = new ClassicPreset.Input(socket, key);
+        const input = new ClassicPreset.Input(socket, key.capitalize());
         // input.addControl(new ClassicPreset.InputControl("number", { initial: 0 }));
         this.addInput(key, input);
       }
