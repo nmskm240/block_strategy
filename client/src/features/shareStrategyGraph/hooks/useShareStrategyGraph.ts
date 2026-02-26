@@ -1,5 +1,5 @@
 import type { EditorHandle } from "@/lib/rete";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { copyTextToClipboard } from "../copyTextToClipboard";
 import {
   decompressJsonFromUrlParam,
@@ -54,7 +54,7 @@ export function useShareStrategyGraph(
     })();
   }, [editorHandle]);
 
-  const exportShareUrl = async () => {
+  const exportShareUrl = useCallback(async () => {
     if (!editorHandle) return;
 
     setExportStatus(null);
@@ -75,7 +75,7 @@ export function useShareStrategyGraph(
             : "Failed to export share URL.",
       });
     }
-  };
+  }, [editorHandle]);
 
   return {
     urlImportError,
