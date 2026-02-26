@@ -10,7 +10,10 @@ export class ApiClient {
   private client: HttpClient;
 
   constructor(options: ApiClientOptions = {}) {
-    const baseUrl = options.baseUrl ?? import.meta.env.VITE_SERVER_URL ?? "/api";
+    const defaultBaseUrl = import.meta.env.DEV
+      ? (import.meta.env.VITE_SERVER_URL ?? "http://localhost:3000/api")
+      : "/api";
+    const baseUrl = options.baseUrl ?? defaultBaseUrl;
     this.client = this.createClient(baseUrl);
   }
 
