@@ -6,11 +6,18 @@ import {
   Presets as ConnectionPresets,
 } from "rete-connection-plugin";
 import { Presets, ReactPlugin } from "rete-react-plugin";
-import type { Graph, OhlcvKind, OrderMode, OrderSide } from "shared";
-import "./styles/area.css";
+import {
+  AutoArrangePlugin,
+  Presets as ArrangePresets,
+} from "rete-auto-arrange-plugin";
+import {
+  Graph as StrategyGraph,
+  type OhlcvKind,
+  type OrderMode,
+  type OrderSide,
+} from "shared";
 import { Connection } from "./connection";
 import { contextMenu } from "./context";
-import { createNodeFromCatalogItem, type NodeCatalogItemId } from "./nodeCatalog";
 import {
   LabeledInputControl,
   LabeledInputControlComponent,
@@ -23,23 +30,29 @@ import {
   ThemedConnectionComponent,
   ThemedNodeComponent,
 } from "./customization";
+import { createNodeFromCatalogItem } from "./nodeCatalog";
+import { createNodeFromGraphNode, NodeCatalogItemId } from "./nodeFactory";
 import {
   ActionNode,
   IndicatorNode,
+  LogicalNode,
   LogicGateNode,
   MathNode,
   NodeBase,
-  LogicalNode,
   OHLCVNode,
 } from "./nodes";
-import { ConditionOperators } from "./types";
+import "./styles/area.css";
 import type { AreaExtra, Schemes } from "./types";
 
 export type EditorHandle = {
   destroy: () => void;
-  getGraph: () => Graph;
+  getGraph: () => StrategyGraph;
+  parseFromJson: (json: string) => Promise<void>;
   addNodeAtViewportCenter: (itemId: NodeCatalogItemId) => Promise<void>;
 };
+
+const NODE_SIZE_READY_TIMEOUT_MS = 300;
+const APPROX_NODE_HALF_SIZE = { x: 110, y: 70 } as const;
 
 export async function createEditor(container: HTMLElement) {
   container.classList.add("rete-editor-area");
@@ -52,6 +65,7 @@ export async function createEditor(container: HTMLElement) {
   const area = new AreaPlugin<Schemes, AreaExtra>(container);
   const connection = new ConnectionPlugin<Schemes, AreaExtra>();
   const render = new ReactPlugin<Schemes, AreaExtra>({ createRoot });
+  const arrange = new AutoArrangePlugin<Schemes>();
 
   AreaExtensions.selectableNodes(area, AreaExtensions.selector(), {
     accumulating: AreaExtensions.accumulateOnCtrl(),
@@ -94,13 +108,14 @@ export async function createEditor(container: HTMLElement) {
     }),
   );
   render.addPreset(Presets.contextMenu.setup());
-
+  arrange.addPreset(ArrangePresets.classic.setup());
   connection.addPreset(ConnectionPresets.classic.setup());
 
   editor.use(area);
   area.use(connection);
   area.use(render);
   area.use(contextMenu);
+  area.use(arrange);
 
   editor.addPipe((context) => {
     if (
@@ -147,7 +162,60 @@ export async function createEditor(container: HTMLElement) {
   });
 
   AreaExtensions.simpleNodesOrder(area);
-  await setupDefaultStrategy(editor, area);
+  // await setupDefaultStrategy(editor, area);
+
+  const waitForPaint = () =>
+    new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+  const waitForNodeSizesReady = async (
+    timeoutMs = NODE_SIZE_READY_TIMEOUT_MS,
+  ) => {
+    const deadline = performance.now() + timeoutMs;
+
+    while (performance.now() < deadline) {
+      const allReady = editor.getNodes().every(isNodeSizeReady);
+
+      if (allReady) {
+        return;
+      }
+
+      await waitForPaint();
+    }
+  };
+
+  const updateAllRenderedNodes = async () => {
+    for (const node of editor.getNodes()) {
+      await area.update("node", node.id);
+    }
+  };
+
+  const restoreNodesFromGraph = async (graph: StrategyGraph) => {
+    const restoredNodeByGraphId = new Map<string, NodeBase>();
+
+    for (const graphNode of graph.nodes) {
+      const node = createNodeFromGraphNode(graphNode);
+      await editor.addNode(node);
+      node.inject(graphNode.spec);
+      restoredNodeByGraphId.set(graphNode.id, node);
+    }
+
+    return restoredNodeByGraphId;
+  };
+
+  const restoreConnectionsFromGraph = async (
+    graph: StrategyGraph,
+    nodeByGraphId: Map<string, NodeBase>,
+  ) => {
+    for (const edge of graph.edges) {
+      const source = nodeByGraphId.get(edge.from.nodeId);
+      const target = nodeByGraphId.get(edge.to.nodeId);
+      if (!canRestoreConnection(source, target, edge)) continue;
+
+      await editor.addConnection(
+        new Connection(source, edge.from.portName, target!, edge.to.portName),
+      );
+    }
+  };
 
   const handle: EditorHandle = {
     destroy: () => {
@@ -156,11 +224,7 @@ export async function createEditor(container: HTMLElement) {
       area.destroy();
     },
     getGraph: () => {
-      const nodes = editor
-        .getNodes()
-        .map((node) => node.toGraphNode())
-        .filter((node): node is NonNullable<typeof node> => node !== null);
-
+      const nodes = editor.getNodes().map((node) => node.toGraphNode());
       const edges = editor.getConnections().map((connection) => ({
         from: {
           nodeId: String(connection.source),
@@ -172,6 +236,16 @@ export async function createEditor(container: HTMLElement) {
         },
       }));
       return { nodes, edges };
+    },
+    parseFromJson: async (json) => {
+      const parsed = StrategyGraph.parse(JSON.parse(json));
+      const restoredNodeByGraphId = await restoreNodesFromGraph(parsed);
+      await restoreConnectionsFromGraph(parsed, restoredNodeByGraphId);
+      await updateAllRenderedNodes();
+
+      await waitForNodeSizesReady();
+
+      await arrange.layout();
     },
     addNodeAtViewportCenter: async (itemId) => {
       const node = createNodeFromCatalogItem(itemId);
@@ -186,13 +260,33 @@ export async function createEditor(container: HTMLElement) {
 
       // Approximate node size so placement feels centered across node types.
       await area.translate(node.id, {
-        x: viewportCenter.x - 110,
-        y: viewportCenter.y - 70,
+        x: viewportCenter.x - APPROX_NODE_HALF_SIZE.x,
+        y: viewportCenter.y - APPROX_NODE_HALF_SIZE.y,
       });
     },
   };
 
   return handle;
+}
+
+function isNodeSizeReady(node: NodeBase): boolean {
+  return (
+    Number.isFinite(node.width) &&
+    Number.isFinite(node.height) &&
+    (node.width ?? 0) > 0 &&
+    (node.height ?? 0) > 0
+  );
+}
+
+function canRestoreConnection(
+  source: NodeBase | undefined,
+  target: NodeBase | undefined,
+  edge: StrategyGraph["edges"][number],
+): source is NodeBase {
+  if (!source || !target) return false;
+  if (!source.outputs[edge.from.portName]) return false;
+  if (!target.inputs[edge.to.portName]) return false;
+  return true;
 }
 
 async function setupDefaultStrategy(

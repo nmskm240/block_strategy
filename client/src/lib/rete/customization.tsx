@@ -7,8 +7,10 @@ import {
   LogicGateNode,
   LogicalNode,
   MathNode,
+  NodeBase,
   OHLCVNode,
 } from "./nodes";
+import { useEffect, useRef } from "react";
 
 function getNodeTypeClass(node: unknown): string {
   if (node instanceof OHLCVNode) {
@@ -32,10 +34,42 @@ function getNodeTypeClass(node: unknown): string {
   return "rete-node-default";
 }
 
-export function ThemedNodeComponent(props: React.ComponentProps<typeof Presets.classic.Node>) {
+export function ThemedNodeComponent(
+  props: React.ComponentProps<typeof Presets.classic.Node>,
+) {
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const nodeClass = getNodeTypeClass(props.data);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    const target =
+      root.querySelector<HTMLElement>("[data-testid='node']") ?? root;
+
+    const applySize = () => {
+      const rect = target.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+
+      const node = props.data as NodeBase;
+      node.width = rect.width;
+      node.height = rect.height;
+    };
+
+    applySize();
+
+    const observer = new ResizeObserver(() => {
+      applySize();
+    });
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [props.data]);
+
   return (
-    <div className={`rete-themed-node ${nodeClass}`}>
+    <div ref={rootRef} className={`rete-themed-node ${nodeClass}`}>
       <Presets.classic.Node {...props} />
     </div>
   );

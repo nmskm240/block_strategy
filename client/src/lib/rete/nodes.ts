@@ -7,6 +7,7 @@ import {
   LogicalOperator,
   type MathOperator,
   NodeKind,
+  NodeSpec,
   OhlcvKind,
   type OrderMode,
   OrderSide,
@@ -33,7 +34,11 @@ export abstract class NodeBase extends ClassicPreset.Node<
     | ClassicPreset.InputControl<"text">
   >
 > {
+  declare width: number;
+  declare height: number;
+
   abstract toGraphNode(): GraphNode;
+  abstract inject(spec: NodeSpec): void;
 }
 
 export class ActionNode extends NodeBase {
@@ -116,6 +121,21 @@ export class ActionNode extends NodeBase {
       },
     };
   }
+
+  inject(spec: NodeSpec): void {
+    if (spec.kind !== NodeKind.ACTION) {
+      throw new Error(`Invalid spec kind for ActionNode: ${String(spec.kind)}`);
+    }
+
+    (this.controls.mode as SelectControl<OrderMode>).setValue(spec.actionType);
+
+    if (spec.actionType === "MARKET_ENTRY") {
+      (this.controls.side as SelectControl<OrderSide>).setValue(spec.params.side);
+      (this.controls.size as LabeledInputControl<"number">).setValue(
+        spec.params.size,
+      );
+    }
+  }
 }
 
 export class IndicatorNode extends NodeBase {
@@ -181,6 +201,26 @@ export class IndicatorNode extends NodeBase {
       spec,
     };
   }
+
+  inject(spec: NodeSpec): void {
+    if (spec.kind !== NodeKind.INDICATOR) {
+      throw new Error(
+        `Invalid spec kind for IndicatorNode: ${String(spec.kind)}`,
+      );
+    }
+    if (spec.indicatorType !== this.kind) {
+      throw new Error(
+        `Indicator type mismatch: expected ${this.kind}, got ${spec.indicatorType}`,
+      );
+    }
+
+    for (const [key, value] of Object.entries(spec.params)) {
+      const control = this.controls[key];
+      if (control instanceof LabeledInputControl) {
+        control.setValue(value);
+      }
+    }
+  }
 }
 
 export class LogicalNode extends NodeBase {
@@ -224,6 +264,24 @@ export class LogicalNode extends NodeBase {
       },
     };
   }
+
+  inject(spec: NodeSpec): void {
+    if (spec.kind !== NodeKind.LOGICAL) {
+      throw new Error(`Invalid spec kind for LogicalNode: ${String(spec.kind)}`);
+    }
+    if (spec.operator !== this.operator) {
+      throw new Error(
+        `Logical operator mismatch: expected ${this.operator}, got ${spec.operator}`,
+      );
+    }
+
+    (
+      this.inputs.left?.control as LabeledInputControl<"number"> | undefined
+    )?.setValue(spec.inputs.left);
+    (
+      this.inputs.right?.control as LabeledInputControl<"number"> | undefined
+    )?.setValue(spec.inputs.right);
+  }
 }
 
 export class MathNode extends NodeBase {
@@ -266,6 +324,24 @@ export class MathNode extends NodeBase {
         },
       },
     };
+  }
+
+  inject(spec: NodeSpec): void {
+    if (spec.kind !== NodeKind.MATH) {
+      throw new Error(`Invalid spec kind for MathNode: ${String(spec.kind)}`);
+    }
+    if (spec.operator !== this.operator) {
+      throw new Error(
+        `Math operator mismatch: expected ${this.operator}, got ${spec.operator}`,
+      );
+    }
+
+    (
+      this.inputs.left?.control as LabeledInputControl<"number"> | undefined
+    )?.setValue(spec.inputs.left);
+    (
+      this.inputs.right?.control as LabeledInputControl<"number"> | undefined
+    )?.setValue(spec.inputs.right);
   }
 }
 
@@ -395,6 +471,21 @@ export class LogicGateNode extends NodeBase {
       },
     };
   }
+
+  inject(spec: NodeSpec): void {
+    if (spec.kind !== NodeKind.BOOLEAN_LOGIC) {
+      throw new Error(
+        `Invalid spec kind for LogicGateNode: ${String(spec.kind)}`,
+      );
+    }
+    if (spec.operator !== this.operator) {
+      throw new Error(
+        `Boolean logic operator mismatch: expected ${this.operator}, got ${spec.operator}`,
+      );
+    }
+
+    this.setInputCount(Object.keys(spec.inputs).length);
+  }
 }
 
 export class OHLCVNode extends NodeBase {
@@ -427,5 +518,13 @@ export class OHLCVNode extends NodeBase {
         },
       },
     };
+  }
+
+  inject(spec: NodeSpec): void {
+    if (spec.kind !== NodeKind.OHLCV) {
+      throw new Error(`Invalid spec kind for OHLCVNode: ${String(spec.kind)}`);
+    }
+
+    (this.controls.kind as SelectControl<OhlcvKind>).setValue(spec.params.kind);
   }
 }

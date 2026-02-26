@@ -1,8 +1,13 @@
+import { type ReactNode } from "react";
 import { AppBar, Box, Button, Stack } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 
-export function Header() {
+type Props = {
+  rightContent?: ReactNode;
+};
+
+export function Header({ rightContent }: Props) {
   const { pathname } = useLocation();
   const isLanding = pathname === "/";
 
@@ -36,6 +41,7 @@ export function Header() {
           />
         </Box>
         <Stack direction="row" spacing={1}>
+          {rightContent}
           {isLanding ? (
             <Button
               component={RouterLink}
