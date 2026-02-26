@@ -137,6 +137,7 @@ export function NodeAddFab({ editorHandle }: Props) {
   return (
     <>
       <Fab
+        data-tour="node-add-fab"
         color="primary"
         aria-label="Add node"
         onClick={openPicker}

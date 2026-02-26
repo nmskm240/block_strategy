@@ -1,0 +1,20 @@
+[
+  {
+    "target": "[data-tour=\"node-add-fab\"]",
+    "placement": "left",
+    "title": "ノード追加",
+    "content": "このボタンからノード一覧を開いて、戦略に必要なノードを追加できます。"
+  },
+  {
+    "target": "[data-tour=\"backtest-run-button\"]",
+    "placement": "left",
+    "title": "バックテスト実行",
+    "content": "実行ボタンから銘柄と期間を指定してバックテストを開始できます。"
+  },
+  {
+    "target": "[data-tour=\"backtest-results-panel\"]",
+    "placement": "left",
+    "title": "結果パネル",
+    "content": "バックテスト結果はこのパネルに追加表示され、比較しながら改善できます。"
+  }
+]

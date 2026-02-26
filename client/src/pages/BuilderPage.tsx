@@ -1,3 +1,4 @@
+import type { LayoutOutletContext } from "@/components/Layout";
 import { NodeAddFab } from "@/features/addNode/components/NodeAddFab";
 import {
   loadBuilderDefaultGraphJson,
@@ -10,14 +11,18 @@ import {
   useShareStrategyGraph,
 } from "@/features/shareStrategyGraph";
 import { BacktestResultsPanel } from "@/features/showBacktestResult/components/BacktestResultsPanel";
+import {
+  TutorialRunButton,
+  TutorialTour,
+  useTutorial,
+} from "@/features/tutorial";
 import type { EditorHandle } from "@/lib/rete";
 import { createEditor } from "@/lib/rete";
-import { useMediaQuery, useTheme } from "@mui/material";
+import { Stack, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useOutletContext } from "react-router-dom";
 import { useRete } from "rete-react-plugin";
 import type { BacktestResult } from "shared";
-import type { LayoutOutletContext } from "@/components/Layout";
 
 export function BuilderPage() {
   const theme = useTheme();
@@ -25,9 +30,10 @@ export function BuilderPage() {
   const location = useLocation();
   const { setHeaderRightContent } = useOutletContext<LayoutOutletContext>();
   const [ref, editorHandle] = useRete<EditorHandle>(createEditor);
-  const [isTutorialRunning, setIsTutorialRunning] = useState(false);
   const [backtests, setBacktests] = useState<BacktestResult[]>([]);
   const hasAppliedInitialRouteGraphRef = useRef(false);
+  const { isRunning: isTutorialRunning, start: startTutorial, stop: stopTutorial } =
+    useTutorial();
   const {
     urlImportError,
     exportStatus,
@@ -37,26 +43,20 @@ export function BuilderPage() {
   } = useShareStrategyGraph(editorHandle);
 
   useEffect(() => {
-    const storageKey = "builder-tutorial-seen-v1";
-    if (window.localStorage.getItem(storageKey) === "1") {
-      return;
-    }
-    window.localStorage.setItem(storageKey, "1");
-    setIsTutorialRunning(true);
-  }, []);
-
-  useEffect(() => {
     setHeaderRightContent(
-      <ShareStrategyGraphHeaderButton
-        onClick={() => void exportShareUrl()}
-        disabled={!editorHandle}
-      />,
+      <Stack direction="row" spacing={0.5}>
+        <TutorialRunButton onClick={startTutorial} />
+        <ShareStrategyGraphHeaderButton
+          onClick={() => void exportShareUrl()}
+          disabled={!editorHandle}
+        />
+      </Stack>,
     );
 
     return () => {
       setHeaderRightContent(null);
     };
-  }, [editorHandle, exportShareUrl, setHeaderRightContent]);
+  }, [editorHandle, exportShareUrl, setHeaderRightContent, startTutorial]);
 
   useEffect(() => {
     if (!editorHandle || hasAppliedInitialRouteGraphRef.current) {
@@ -119,14 +119,12 @@ export function BuilderPage() {
             maxWidth: isMobile ? "100%" : "60dvh",
             width: isMobile ? "100%" : undefined,
           }}
+          data-tour="backtest-results-panel"
         >
           <BacktestResultsPanel backtests={backtests} />
         </div>
       </div>
-      <BuilderTutorialTour
-        run={isTutorialRunning}
-        onStop={() => setIsTutorialRunning(false)}
-      />
+      <TutorialTour run={isTutorialRunning} onStop={stopTutorial} />
     </>
   );
 }
