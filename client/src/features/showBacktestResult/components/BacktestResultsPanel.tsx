@@ -1,6 +1,6 @@
 import { BacktestResultDetail } from "@/features/showBacktestResult/components/BacktestResultDetail";
 import { BacktestResultSelector } from "@/features/showBacktestResult/components/BacktestResultSelector";
-import { Box, Collapse, Paper, Stack, Typography } from "@mui/material";
+import { Box, Collapse, Link, Paper, Stack, Typography } from "@mui/material";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import type { BacktestResult } from "shared";
@@ -96,6 +96,22 @@ export function BacktestResultsPanel({ backtests }: Props) {
             onSelectResult={setSelectedResult}
           />
           <BacktestResultDetail result={selectedResult} />
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ pt: 1, px: 0.5, textAlign: "right" }}
+          >
+            Data provided by{" "}
+            <Link
+              href="https://twelvedata.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              underline="hover"
+              color="inherit"
+            >
+              Twelve Data
+            </Link>
+          </Typography>
         </Stack>
       </Collapse>
     </Paper>
