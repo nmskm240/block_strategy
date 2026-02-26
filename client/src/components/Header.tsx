@@ -61,6 +61,26 @@ export function Header({ rightContent }: Props) {
               戦略作成を始める
             </Button>
           ) : null}
+          <Box
+            component="a"
+            href="https://github.com/nmskm240/block_strategy"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Open GitHub repository"
+            sx={{ display: "inline-flex", alignItems: "center" }}
+          >
+            <Box
+              component="img"
+              src="/github.svg"
+              alt="GitHub"
+              sx={(theme) => ({
+                width: 25,
+                height: 25,
+                margin: 1,
+                filter: theme.palette.mode === "dark" ? "invert(1)" : "none",
+              })}
+            />
+          </Box>
         </Stack>
       </Stack>
     </AppBar>
