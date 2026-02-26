@@ -60,7 +60,7 @@ bun run dev
 ```bash
 bun run dev:client   # Vite client
 bun run dev:server   # Hono server (Turbo 経由)
-bun run dev:server:worker # server workspace を直接起動
+bun run dev:server:cf # server workspace を直接起動 (root wrangler.jsonc を利用)
 ```
 
 ## Build

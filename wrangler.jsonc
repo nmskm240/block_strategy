@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "block-strategy",
+  "main": "./server/src/index.ts",
+  "compatibility_date": "2026-02-16",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./client/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "dev": {
+    "ip": "0.0.0.0",
+    "port": 3000
+  },
+  "vars": {
+    "TWELVE_DATA_BASE_URL": "https://api.twelvedata.com"
+  }
+}

@@ -10,7 +10,7 @@ export class ApiClient {
   private client: HttpClient;
 
   constructor(options: ApiClientOptions = {}) {
-    const baseUrl = options.baseUrl ?? import.meta.env.VITE_SERVER_URL ?? "";
+    const baseUrl = options.baseUrl ?? import.meta.env.VITE_SERVER_URL ?? "/api";
     this.client = this.createClient(baseUrl);
   }
 

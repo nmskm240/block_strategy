@@ -3,6 +3,9 @@ import { cors } from "hono/cors";
 
 import { backtestRoute } from "./routes/backtest";
 
-const app = new Hono().use(cors()).route("/backtest", backtestRoute);
+const app = new Hono()
+  .basePath("/api")
+  .use(cors())
+  .route("/backtest", backtestRoute);
 
 export default app;
