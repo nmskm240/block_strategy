@@ -1,0 +1,213 @@
+{
+  "nodes": [
+    {
+      "id": "ohlcv-close",
+      "spec": {
+        "kind": "ohlcv",
+        "params": {
+          "kind": "CLOSE"
+        }
+      }
+    },
+    {
+      "id": "sma-20",
+      "spec": {
+        "kind": "indicator",
+        "indicatorType": "SMA",
+        "params": {
+          "period": 20
+        },
+        "inputs": {
+          "source": 0
+        },
+        "outputs": {
+          "value": 0
+        }
+      }
+    },
+    {
+      "id": "sma-50",
+      "spec": {
+        "kind": "indicator",
+        "indicatorType": "SMA",
+        "params": {
+          "period": 50
+        },
+        "inputs": {
+          "source": 0
+        },
+        "outputs": {
+          "value": 0
+        }
+      }
+    },
+    {
+      "id": "golden-cross",
+      "spec": {
+        "kind": "logical",
+        "operator": "CrossOver",
+        "inputs": {
+          "left": 0,
+          "right": 0
+        },
+        "outputs": {
+          "true": true
+        }
+      }
+    },
+    {
+      "id": "dead-cross",
+      "spec": {
+        "kind": "logical",
+        "operator": "CrossDown",
+        "inputs": {
+          "left": 0,
+          "right": 0
+        },
+        "outputs": {
+          "true": true
+        }
+      }
+    },
+    {
+      "id": "long-entry",
+      "spec": {
+        "kind": "action",
+        "actionType": "MARKET_ENTRY",
+        "params": {
+          "side": "BUY",
+          "size": 1
+        }
+      }
+    },
+    {
+      "id": "long-exit",
+      "spec": {
+        "kind": "action",
+        "actionType": "MARKET_EXIT",
+        "params": {}
+      }
+    },
+    {
+      "id": "short-entry",
+      "spec": {
+        "kind": "action",
+        "actionType": "MARKET_ENTRY",
+        "params": {
+          "side": "SELL",
+          "size": 1
+        }
+      }
+    },
+    {
+      "id": "short-exit",
+      "spec": {
+        "kind": "action",
+        "actionType": "MARKET_EXIT",
+        "params": {}
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": {
+        "nodeId": "ohlcv-close",
+        "portName": "value"
+      },
+      "to": {
+        "nodeId": "sma-20",
+        "portName": "source"
+      }
+    },
+    {
+      "from": {
+        "nodeId": "ohlcv-close",
+        "portName": "value"
+      },
+      "to": {
+        "nodeId": "sma-50",
+        "portName": "source"
+      }
+    },
+    {
+      "from": {
+        "nodeId": "sma-20",
+        "portName": "value"
+      },
+      "to": {
+        "nodeId": "golden-cross",
+        "portName": "left"
+      }
+    },
+    {
+      "from": {
+        "nodeId": "sma-50",
+        "portName": "value"
+      },
+      "to": {
+        "nodeId": "golden-cross",
+        "portName": "right"
+      }
+    },
+    {
+      "from": {
+        "nodeId": "golden-cross",
+        "portName": "true"
+      },
+      "to": {
+        "nodeId": "long-entry",
+        "portName": "trigger"
+      }
+    },
+    {
+      "from": {
+        "nodeId": "golden-cross",
+        "portName": "true"
+      },
+      "to": {
+        "nodeId": "short-exit",
+        "portName": "trigger"
+      }
+    },
+    {
+      "from": {
+        "nodeId": "sma-20",
+        "portName": "value"
+      },
+      "to": {
+        "nodeId": "dead-cross",
+        "portName": "left"
+      }
+    },
+    {
+      "from": {
+        "nodeId": "sma-50",
+        "portName": "value"
+      },
+      "to": {
+        "nodeId": "dead-cross",
+        "portName": "right"
+      }
+    },
+    {
+      "from": {
+        "nodeId": "dead-cross",
+        "portName": "true"
+      },
+      "to": {
+        "nodeId": "short-entry",
+        "portName": "trigger"
+      }
+    },
+    {
+      "from": {
+        "nodeId": "dead-cross",
+        "portName": "true"
+      },
+      "to": {
+        "nodeId": "long-exit",
+        "portName": "trigger"
+      }
+    }
+  ]
+}

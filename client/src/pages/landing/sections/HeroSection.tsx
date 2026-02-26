@@ -1,3 +1,4 @@
+import { builderDefaultGraphRouteState } from "@/features/builder/defaultStrategy";
 import { Link as RouterLink } from "react-router-dom";
 import { Box, Button, Chip, Container, Stack, Typography } from "@mui/material";
 
@@ -73,6 +74,7 @@ export function HeroSection() {
               <Button
                 component={RouterLink}
                 to="/builder"
+                state={builderDefaultGraphRouteState}
                 size="large"
                 variant="contained"
                 sx={{

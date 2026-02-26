@@ -1,3 +1,4 @@
+import { builderDefaultGraphRouteState } from "@/features/builder/defaultStrategy";
 import { Link as RouterLink } from "react-router-dom";
 import { Box, Button, Chip, Container, Paper, Stack, Typography } from "@mui/material";
 import { FaqItem } from "@/pages/landing/FaqItem";
@@ -53,6 +54,7 @@ export function CtaFaqSection() {
             <Button
               component={RouterLink}
               to="/builder"
+              state={builderDefaultGraphRouteState}
               variant="contained"
               size="large"
               sx={{

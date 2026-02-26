@@ -10,12 +10,7 @@ import {
   AutoArrangePlugin,
   Presets as ArrangePresets,
 } from "rete-auto-arrange-plugin";
-import {
-  Graph as StrategyGraph,
-  type OhlcvKind,
-  type OrderMode,
-  type OrderSide,
-} from "shared";
+import { Graph as StrategyGraph } from "shared";
 import { Connection } from "./connection";
 import { contextMenu } from "./context";
 import {
@@ -33,13 +28,10 @@ import {
 import { createNodeFromCatalogItem } from "./nodeCatalog";
 import { createNodeFromGraphNode, NodeCatalogItemId } from "./nodeFactory";
 import {
-  ActionNode,
-  IndicatorNode,
   LogicalNode,
   LogicGateNode,
   MathNode,
   NodeBase,
-  OHLCVNode,
 } from "./nodes";
 import "./styles/area.css";
 import type { AreaExtra, Schemes } from "./types";
@@ -162,7 +154,6 @@ export async function createEditor(container: HTMLElement) {
   });
 
   AreaExtensions.simpleNodesOrder(area);
-  // await setupDefaultStrategy(editor, area);
 
   const waitForPaint = () =>
     new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
@@ -287,107 +278,4 @@ function canRestoreConnection(
   if (!source.outputs[edge.from.portName]) return false;
   if (!target.inputs[edge.to.portName]) return false;
   return true;
-}
-
-async function setupDefaultStrategy(
-  editor: NodeEditor<Schemes>,
-  area: AreaPlugin<Schemes, AreaExtra>,
-) {
-  if (editor.getNodes().length > 0) {
-    return;
-  }
-
-  const close = new OHLCVNode();
-  const sma20 = new IndicatorNode("SMA");
-  const sma50 = new IndicatorNode("SMA");
-  const goldenCross = new LogicalNode("CrossOver");
-  const deadCross = new LogicalNode("CrossDown");
-  const longEntry = new ActionNode();
-  const longExit = new ActionNode();
-  const shortEntry = new ActionNode();
-  const shortExit = new ActionNode();
-
-  (close.controls.kind as SelectControl<OhlcvKind>).setValue("CLOSE");
-  (sma20.controls.period as LabeledInputControl<"number">).setValue(20);
-  (sma50.controls.period as LabeledInputControl<"number">).setValue(50);
-  (longExit.controls.mode as SelectControl<OrderMode>).setValue("MARKET_EXIT");
-  (shortEntry.controls.side as SelectControl<OrderSide>).setValue("SELL");
-  (shortExit.controls.mode as SelectControl<OrderMode>).setValue("MARKET_EXIT");
-
-  await editor.addNode(close);
-  await editor.addNode(sma20);
-  await editor.addNode(sma50);
-  await editor.addNode(goldenCross);
-  await editor.addNode(longEntry);
-  await editor.addNode(shortExit);
-  await editor.addNode(deadCross);
-  await editor.addNode(shortEntry);
-  await editor.addNode(longExit);
-
-  await area.translate(close.id, { x: 80, y: 180 });
-  await area.translate(sma20.id, { x: 300, y: 90 });
-  await area.translate(sma50.id, { x: 300, y: 280 });
-  await area.translate(goldenCross.id, { x: 560, y: 120 });
-  await area.translate(longEntry.id, { x: 800, y: 120 });
-  await area.translate(shortExit.id, { x: 1040, y: 120 });
-  await area.translate(deadCross.id, { x: 560, y: 300 });
-  await area.translate(shortEntry.id, { x: 800, y: 300 });
-  await area.translate(longExit.id, { x: 1040, y: 300 });
-
-  const asSchemeConnection = <A extends NodeBase, B extends NodeBase>(
-    connection: Connection<A, B>,
-  ) => connection as unknown as Connection<NodeBase, NodeBase>;
-
-  await editor.addConnection(
-    asSchemeConnection(new Connection(close, "value", sma20, "source")),
-  );
-  await editor.addConnection(
-    asSchemeConnection(new Connection(close, "value", sma50, "source")),
-  );
-  await editor.addConnection(
-    asSchemeConnection(new Connection(sma20, "value", goldenCross, "left")),
-  );
-  await editor.addConnection(
-    asSchemeConnection(new Connection(sma50, "value", goldenCross, "right")),
-  );
-  await editor.addConnection(
-    asSchemeConnection(
-      new Connection(goldenCross, "true", longEntry, "trigger"),
-    ),
-  );
-  await editor.addConnection(
-    asSchemeConnection(
-      new Connection(goldenCross, "true", shortExit, "trigger"),
-    ),
-  );
-  await editor.addConnection(
-    asSchemeConnection(new Connection(sma20, "value", deadCross, "left")),
-  );
-  await editor.addConnection(
-    asSchemeConnection(new Connection(sma50, "value", deadCross, "right")),
-  );
-  await editor.addConnection(
-    asSchemeConnection(
-      new Connection(deadCross, "true", shortEntry, "trigger"),
-    ),
-  );
-  await editor.addConnection(
-    asSchemeConnection(new Connection(deadCross, "true", longExit, "trigger")),
-  );
-
-  await AreaExtensions.zoomAt(
-    area,
-    [
-      close,
-      sma20,
-      sma50,
-      goldenCross,
-      longEntry,
-      shortExit,
-      deadCross,
-      shortEntry,
-      longExit,
-    ],
-    { scale: 0.9 },
-  );
 }

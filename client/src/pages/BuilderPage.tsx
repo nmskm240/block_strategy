@@ -1,5 +1,9 @@
 import { BuilderTutorialTour } from "@/components/BuilderTutorialTour";
 import { MobileNodeAddFab } from "@/features/addNode/components/MobileNodeAddFab";
+import {
+  loadBuilderDefaultGraphJson,
+  shouldLoadDefaultBuilderGraph,
+} from "@/features/builder/defaultStrategy";
 import { BacktestRunButton } from "@/features/runBacktest/components/BacktestRunButton";
 import {
   ShareStrategyGraphAlerts,
@@ -10,8 +14,8 @@ import { BacktestResultsPanel } from "@/features/showBacktestResult/components/B
 import type { EditorHandle } from "@/lib/rete";
 import { createEditor } from "@/lib/rete";
 import { useMediaQuery, useTheme } from "@mui/material";
-import { useEffect, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useOutletContext } from "react-router-dom";
 import { useRete } from "rete-react-plugin";
 import type { BacktestResult } from "shared";
 import type { LayoutOutletContext } from "@/components/Layout";
@@ -19,10 +23,12 @@ import type { LayoutOutletContext } from "@/components/Layout";
 export function BuilderPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const location = useLocation();
   const { setHeaderRightContent } = useOutletContext<LayoutOutletContext>();
   const [ref, editorHandle] = useRete<EditorHandle>(createEditor);
   const [isTutorialRunning, setIsTutorialRunning] = useState(false);
   const [backtests, setBacktests] = useState<BacktestResult[]>([]);
+  const hasAppliedInitialRouteGraphRef = useRef(false);
   const {
     urlImportError,
     exportStatus,
@@ -52,6 +58,30 @@ export function BuilderPage() {
       setHeaderRightContent(null);
     };
   }, [editorHandle, exportShareUrl, setHeaderRightContent]);
+
+  useEffect(() => {
+    if (!editorHandle || hasAppliedInitialRouteGraphRef.current) {
+      return;
+    }
+
+    if (!shouldLoadDefaultBuilderGraph(location.state)) {
+      return;
+    }
+
+    if (new URLSearchParams(location.search).has("g")) {
+      return;
+    }
+
+    hasAppliedInitialRouteGraphRef.current = true;
+
+    void (async () => {
+      if (editorHandle.getGraph().nodes.length > 0) {
+        return;
+      }
+      const json = await loadBuilderDefaultGraphJson();
+      await editorHandle.parseFromJson(json);
+    })();
+  }, [editorHandle, location.search, location.state]);
 
   return (
     <>

@@ -1,3 +1,4 @@
+import { builderDefaultGraphRouteState } from "@/features/builder/defaultStrategy";
 import { type ReactNode } from "react";
 import { AppBar, Box, Button, Stack } from "@mui/material";
 import { alpha } from "@mui/material/styles";
@@ -46,6 +47,7 @@ export function Header({ rightContent }: Props) {
             <Button
               component={RouterLink}
               to="/builder"
+              state={builderDefaultGraphRouteState}
               variant="contained"
               size="small"
               sx={{
