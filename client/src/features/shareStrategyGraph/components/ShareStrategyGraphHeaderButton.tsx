@@ -6,7 +6,10 @@ type Props = {
   onClick: () => void;
 };
 
-export function ShareStrategyGraphHeaderButton({ disabled = false, onClick }: Props) {
+export function ShareStrategyGraphHeaderButton({
+  disabled = false,
+  onClick,
+}: Props) {
   return (
     <Tooltip title="Share URL">
       <span>
@@ -16,7 +19,7 @@ export function ShareStrategyGraphHeaderButton({ disabled = false, onClick }: Pr
           disabled={disabled}
           aria-label="Export share URL"
         >
-          <Share2 size={18} />
+          <Share2 />
         </IconButton>
       </span>
     </Tooltip>
