@@ -1,5 +1,4 @@
-import { BuilderTutorialTour } from "@/components/BuilderTutorialTour";
-import { MobileNodeAddFab } from "@/features/addNode/components/MobileNodeAddFab";
+import { NodeAddFab } from "@/features/addNode/components/NodeAddFab";
 import {
   loadBuilderDefaultGraphJson,
   shouldLoadDefaultBuilderGraph,
@@ -110,7 +109,7 @@ export function BuilderPage() {
               setBacktests((current) => [item, ...current]);
             }}
           />
-          {isMobile && <MobileNodeAddFab editorHandle={editorHandle ?? undefined} />}
+          <NodeAddFab editorHandle={editorHandle ?? undefined} />
         </div>
         <div
           style={{
